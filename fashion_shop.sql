@@ -6,7 +6,7 @@ GO
 
 CREATE TABLE roles
 (
-    id   INT PRIMARY KEY,
+    id   INT IDENTITY (1,1) NOT NULL PRIMARY KEY,
     name VARCHAR(20) NOT NULL
 );
 
@@ -50,7 +50,7 @@ CREATE TABLE categories
 );
 GO
 
-CREATE TABLE product
+CREATE TABLE products
 (
     id          INT IDENTITY (1,1) NOT NULL,
     category_id INT                NOT NULL,
@@ -63,13 +63,6 @@ CREATE TABLE product
 );
 GO
 
-CREATE TABLE products
-(
-    id           INT PRIMARY KEY IDENTITY (1,1),
-    product_name NVARCHAR(100) NOT NULL,
-    description  NVARCHAR(MAX)
-);
-
 CREATE TABLE attributes
 (
     id             INT PRIMARY KEY IDENTITY (1,1),
@@ -81,6 +74,7 @@ CREATE TABLE attribute_values
     id           INT PRIMARY KEY IDENTITY (1,1),
     attribute_id INT           NOT NULL,
     value_name   NVARCHAR(100) NOT NULL,
+    value_img    NVARCHAR(100) NULL,
     FOREIGN KEY (attribute_id) REFERENCES attributes (id)
 );
 
