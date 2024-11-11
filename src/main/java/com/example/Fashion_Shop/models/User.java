@@ -1,9 +1,14 @@
 package com.example.Fashion_Shop.models;
 
-public class User {
+import java.util.Date;
+
+public class User extends BaseEntity{
     private int id;
     private String name;
     private String email;
     private String phone;
-    public int role_id;
+    private int role_id;
+    private String password;
+    private String one_time_password;
+    private Date otp_requested_time;
 }
