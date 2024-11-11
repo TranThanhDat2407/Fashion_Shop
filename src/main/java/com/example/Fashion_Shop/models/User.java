@@ -5,5 +5,5 @@ public class User {
     private String name;
     private String email;
     private String phone;
-
+    public int role_id;
 }
