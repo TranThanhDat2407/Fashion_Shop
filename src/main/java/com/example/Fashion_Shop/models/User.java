@@ -1,6 +1,9 @@
 package com.example.Fashion_Shop.models;
 
 public class User {
-    public String name;
+    private int id;
+    private String name;
+    private String email;
+    private String phone;
     public int role_id;
 }
