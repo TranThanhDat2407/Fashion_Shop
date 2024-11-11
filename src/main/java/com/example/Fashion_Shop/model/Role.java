@@ -1,4 +1,4 @@
-package com.example.Fashion_Shop.models;
+package com.example.Fashion_Shop.model;
 
 import jakarta.persistence.*;
 import lombok.*;
