@@ -1,5 +1,6 @@
 package com.example.Fashion_Shop.model;
 
+import aj.org.objectweb.asm.commons.Remapper;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import lombok.*;
 public class AttributeValue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "value_name", length = 100)
     private String valueName;
@@ -24,4 +25,5 @@ public class AttributeValue {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name= "attribute_id")
     private Attribute attribute;
+
 }
