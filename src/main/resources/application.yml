@@ -1,3 +1,5 @@
+server:
+  port: 8080
 spring:
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=FASHION_SHOP;encrypt=false;trustServerCertificate=true;
@@ -6,9 +8,34 @@ spring:
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.SQLServerDialect
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    default-locale: vi
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: YOUR_FACEBOOK_APP_ID
+            client-secret: YOUR_FACEBOOK_APP_SECRET
+            redirect-uri: "TEST"
+            user-info-uri:
+
+            resource-server:
+              oqaque-token:
+                introspection-uri: "https://googleapis.com"
+
+
+api:
+  prefix: /api/v1

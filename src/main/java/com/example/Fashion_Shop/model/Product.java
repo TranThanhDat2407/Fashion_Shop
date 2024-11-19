@@ -1,6 +1,7 @@
 package com.example.Fashion_Shop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,26 +10,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "products")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Category {
+public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name ="name")
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column(name="name", length = 100)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    @JsonBackReference
-    private Category parentCategory;
+    @Column(name ="description")
+    private String description;
 
-    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Category> subCategories = new ArrayList<>();
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<SKU> sku;
 }
