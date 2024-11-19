@@ -1,6 +1,7 @@
 package com.example.Fashion_Shop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,9 +27,8 @@ public class SKU extends BaseEntity{
     @Column(name="sale_price")
     private Double salePrice;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name="product_id")
-    @JsonManagedReference
     private Product product;
 
     @ManyToOne

@@ -31,7 +31,13 @@ public class Product extends BaseEntity {
     @Column(name ="description")
     private String description;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonBackReference
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+//    @JsonBackReference
+    @JsonManagedReference
     private List<SKU> sku;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+//    @JsonBackReference
+    @JsonManagedReference
+    private List<ProductImage> productImages;
 }
