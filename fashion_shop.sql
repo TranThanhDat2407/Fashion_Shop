@@ -192,8 +192,4 @@ CREATE TABLE order_payments
     FOREIGN KEY (order_id) REFERENCES orders (id)
 );
 
-
-
-
-
-
+SELECT * FROM products

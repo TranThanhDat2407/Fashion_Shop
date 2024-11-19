@@ -1,0 +1,43 @@
+[
+    {
+        "id": 5,
+        "name": "Áo Khoác Blouson Vải Brushed Jersey Kéo Khóa",
+        "price": 780000.0,
+        "colors": [
+            {
+                "colorId": 12,
+                "colorName": "34 BROWN",
+                "swatchImageUrl": "34BROWN.jpg"
+            },
+            {
+                "colorId": 13,
+                "colorName": "38 DARK BROWN",
+                "swatchImageUrl": "38DARKBROWN.jpg"
+            },
+            {
+                "colorId": 14,
+                "colorName": "08 DARK GRAY",
+                "swatchImageUrl": "08DARKGRAY.jpg"
+            }
+        ],
+        "sizes": [
+            {
+                "sizeId": 8,
+                "sizeName": "S"
+            },
+            {
+                "sizeId": 9,
+                "sizeName": "M"
+            },
+            {
+                "sizeId": 10,
+                "sizeName": "L"
+            }
+        ],
+        "images": [
+            "BLOUSON34BROWN.jpg",
+            "BLOUSON38DARKBROWN.jpg",
+            "BLOUSON08DARKGRAY.jpg"
+        ]
+    }
+]
