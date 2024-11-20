@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 public class ProductResponse extends BaseResponse{
     private Long id;
     private String name;
-    private String description;
     private List<SkuResponse> skus;
     private List<ProductImageResponse> productImages;
 
@@ -33,7 +32,6 @@ public class ProductResponse extends BaseResponse{
         ProductResponse productResponse = ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
-                .description(product.getDescription())
                 .skus(skuResponses)
                 .productImages(productImageResponses)
                 .build();
