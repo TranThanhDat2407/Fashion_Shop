@@ -12,18 +12,48 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategory(Category category);
+//    @Query("""
+//    SELECT DISTINCT p FROM Product p
+//     JOIN FETCH p.sku sku
+//     JOIN FETCH sku.color c
+//     JOIN FETCH sku.size s
+//     WHERE (:categoryId IS NULL
+//            OR p.category.id = :categoryId
+//            OR p.category.parentCategory.id = :categoryId
+//            OR p.category.parentCategory.id IN
+//                (SELECT c.id FROM Category c WHERE c.parentCategory.id = :categoryId))
+//""")
+//    Page<Product> findAllWithVariantsAndCategory(@Param("categoryId") Long categoryId, Pageable pageable);
 
-    @Query("""
-    SELECT DISTINCT p FROM Product p
-     JOIN FETCH p.sku sku
-     JOIN FETCH sku.color c
-     JOIN FETCH sku.size s
-     WHERE (:categoryId IS NULL 
-            OR p.category.id = :categoryId 
-            OR p.category.parentCategory.id = :categoryId 
-            OR p.category.parentCategory.id IN 
-                (SELECT c.id FROM Category c WHERE c.parentCategory.id = :categoryId))
-""")
-    Page<Product> findAllWithVariantsAndCategory(@Param("categoryId") Long categoryId, Pageable pageable);
+    @Query("SELECT p FROM Product p " +
+            "LEFT JOIN p.sku s " +
+            "WHERE :categoryId IS NULL " +
+            "      OR p.category.id = :categoryId " +
+            "      OR p.category.parentCategory.id = :categoryId " +
+            "      OR p.category.parentCategory.id IN " +
+            "          (SELECT c.id FROM Category c WHERE c.parentCategory.id = :categoryId) " +
+            "GROUP BY p " +
+            "ORDER BY " +
+            "CASE WHEN :sortBy = 'name' THEN p.name END ASC, " +
+            "CASE WHEN :sortBy = 'price' THEN MIN(s.salePrice) END ASC," +
+            "CASE WHEN :sortBy = 'createAt' THEN p.createAt END ASC" )
+    Page<Product> findAllWithSortAsc(@Param("categoryId") Long categoryId,
+                                     @Param("sortBy") String sortBy,
+                                     Pageable pageable);
 
+    @Query("SELECT p FROM Product p " +
+            "LEFT JOIN p.sku s " +
+            "WHERE :categoryId IS NULL " +
+            "      OR p.category.id = :categoryId " +
+            "      OR p.category.parentCategory.id = :categoryId " +
+            "      OR p.category.parentCategory.id IN " +
+            "          (SELECT c.id FROM Category c WHERE c.parentCategory.id = :categoryId) " +
+            "GROUP BY p " +
+            "ORDER BY " +
+            "CASE WHEN :sortBy = 'name' THEN p.name END DESC, " +
+            "CASE WHEN :sortBy = 'price' THEN MIN(s.salePrice) END DESC,"+
+            "CASE WHEN :sortBy = 'createAt' THEN p.createAt END DESC" )
+    Page<Product> findAllWithSortDesc(@Param("categoryId") Long categoryId,
+                                      @Param("sortBy") String sortBy,
+                                      Pageable pageable);
 }
