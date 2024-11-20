@@ -25,13 +25,14 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ProductListResponse> getProducts(
             @RequestParam(required = false) Long categoryId, // Không bắt buộc
-            @RequestParam(defaultValue = "0") int page,      // Mặc định page là 0
+            @RequestParam(defaultValue = "") String keyword,  //keyword
+            @RequestParam(defaultValue = "0") int page,  // Mặc định page là 0
             @RequestParam(defaultValue = "8") int size,     // Mặc định page size là 8
             @RequestParam(defaultValue = "createAt") String sortBy, // Mặc định sắp xếp theo ngày tạo product
             @RequestParam(defaultValue = "desc") String sortDirection // Mặc định sắp xếp giảm dần
     ) {
         try {
-            Page<ProductResponse> productPage = productService.getProducts(categoryId, page, size, sortBy, sortDirection);
+            Page<ProductResponse> productPage = productService.getProducts(categoryId, keyword, page, size, sortBy, sortDirection);
 
             ProductListResponse response = ProductListResponse.builder()
                     .products(productPage.getContent()) // Danh sách sản phẩm
