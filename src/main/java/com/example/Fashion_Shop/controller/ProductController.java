@@ -23,16 +23,22 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<Page<ProductResponse>> getProducts(
+    public ResponseEntity<ProductListResponse> getProducts(
             @RequestParam(required = false) Long categoryId, // Không bắt buộc
             @RequestParam(defaultValue = "0") int page,      // Mặc định page là 0
-            @RequestParam(defaultValue = "10") int size,     // Mặc định page size là 10
-            @RequestParam(defaultValue = "createAt") String sortBy, // Mặc định sắp xếp theo id
-            @RequestParam(defaultValue = "asc") String sortDirection // Mặc định sắp xếp tăng dần
+            @RequestParam(defaultValue = "8") int size,     // Mặc định page size là 8
+            @RequestParam(defaultValue = "createAt") String sortBy, // Mặc định sắp xếp theo ngày tạo product
+            @RequestParam(defaultValue = "desc") String sortDirection // Mặc định sắp xếp giảm dần
     ) {
         try {
-            Page<ProductResponse> products = productService.getProducts(categoryId, page, size, sortBy, sortDirection);
-            return ResponseEntity.ok(products);
+            Page<ProductResponse> productPage = productService.getProducts(categoryId, page, size, sortBy, sortDirection);
+
+            ProductListResponse response = ProductListResponse.builder()
+                    .products(productPage.getContent()) // Danh sách sản phẩm
+                    .totalPages(productPage.getTotalPages()) // Tổng số trang
+                    .build();
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
