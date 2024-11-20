@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 public class ProductService {
     private final ProductRepository productRepository;
 
-    public Page<ProductResponse> getProducts(Long categoryId, int page, int size, String sortBy, String sortDirection) {
+    public Page<ProductResponse> getProducts(
+            Long categoryId, String keyword, int page, int size, String sortBy, String sortDirection) {
         // code cũ
 //        Sort.Direction direction = "asc".equalsIgnoreCase(sortDirection)
 //                ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -27,8 +28,8 @@ public class ProductService {
         // dựa theo sortDirection asc hay desc mà chạy query sort
         // do price nằm ở SKU còn name nằm ở product
         Page<Product> products = "asc".equalsIgnoreCase(sortDirection)
-                ? productRepository.findAllWithSortAsc(categoryId, sortBy, pageable)
-                : productRepository.findAllWithSortDesc(categoryId, sortBy, pageable);
+                ? productRepository.findAllWithSortAndKeywordASC(categoryId,keyword, sortBy, pageable)
+                : productRepository.findAllWithSortAndKeywordDESC(categoryId,keyword, sortBy, pageable);
 
         return products.map(ProductResponse::fromProduct);
     }
