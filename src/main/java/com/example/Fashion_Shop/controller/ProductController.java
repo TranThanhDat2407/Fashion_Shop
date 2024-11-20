@@ -2,6 +2,7 @@ package com.example.Fashion_Shop.controller;
 
 import com.example.Fashion_Shop.model.Category;
 import com.example.Fashion_Shop.model.Product;
+import com.example.Fashion_Shop.response.product.ProductDetailResponse;
 import com.example.Fashion_Shop.response.product.ProductListResponse;
 import com.example.Fashion_Shop.response.product.ProductResponse;
 import com.example.Fashion_Shop.service.product.ProductService;
@@ -9,10 +10,7 @@ import lombok.AllArgsConstructor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -44,5 +42,15 @@ public class ProductController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductDetailResponse> getProductDetails(
+            @PathVariable Long productId,
+            @RequestParam(required = false) Long colorId,
+            @RequestParam(required = false) Long sizeId) {
+
+        ProductDetailResponse response = productService.getProductDetails(productId, colorId, sizeId);
+        return ResponseEntity.ok(response);
     }
 }

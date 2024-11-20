@@ -30,7 +30,7 @@ public class ProductDetailResponse {
     private List<SkuResponse> skus;
     private List<ProductImageResponse> productImages;
 
-    private static ProductDetailResponse fromProduct(Product product, SKU selectedSku, ProductImage selectedImage) {
+    public static ProductDetailResponse fromProduct(Product product, SKU selectedSku, ProductImage selectedImage) {
         List<SkuResponse> skuResponses = product.getSku().stream()
                 .map(SkuResponse::fromSKU)
                 .toList();
@@ -44,15 +44,9 @@ public class ProductDetailResponse {
                 .name(product.getName())
                 .description(product.getDescription())
                 .selectedSku(selectedSku != null ? SkuResponse.fromSKU(selectedSku) : null)
-                .selectedColor(selectedSku != null && selectedSku.getColor() != null
-                        ? ColorResponse.fromColor(selectedSku.getColor())
-                        : null)
-                .selectedSize(selectedSku != null && selectedSku.getSize() != null
-                        ? SizeResponse.fromSize(selectedSku.getSize())
-                        : null)
-                .selectedImage(selectedImage != null
-                        ? ProductImageResponse.fromProductImage(selectedImage)
-                        : null)
+                .selectedColor(ColorResponse.fromColor(selectedSku.getColor()))
+                .selectedSize(SizeResponse.fromSize(selectedSku.getSize()))
+                .selectedImage(ProductImageResponse.fromProductImage(selectedImage))
                 .skus(skuResponses)
                 .productImages(productImageResponses)
                 .build();
