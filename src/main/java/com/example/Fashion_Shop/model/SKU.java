@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "SKUs")
 @Getter
@@ -30,6 +32,9 @@ public class SKU extends BaseEntity{
     @ManyToOne
     @JoinColumn(name="product_id")
     private Product product;
+
+    @OneToMany(mappedBy = "sku", cascade = CascadeType.ALL)
+    private List<Review> review;
 
     @ManyToOne
     @JoinColumn(name="color_value_id")
