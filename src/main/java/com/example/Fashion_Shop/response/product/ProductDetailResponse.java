@@ -24,8 +24,8 @@ public class ProductDetailResponse {
     private String name;
     private String description;
     private SkuResponse selectedSku;
-    private ColorResponse selectedColor;
-    private SizeResponse selectedSize;
+//    private ColorResponse selectedColor;
+//    private SizeResponse selectedSize;
     private ProductImageResponse selectedImage;
     private List<SkuResponse> skus;
     private List<ProductImageResponse> productImages;
@@ -44,8 +44,8 @@ public class ProductDetailResponse {
                 .name(product.getName())
                 .description(product.getDescription())
                 .selectedSku(selectedSku != null ? SkuResponse.fromSKU(selectedSku) : null)
-                .selectedColor(ColorResponse.fromColor(selectedSku.getColor()))
-                .selectedSize(SizeResponse.fromSize(selectedSku.getSize()))
+//                .selectedColor(ColorResponse.fromColor(selectedSku.getColor()))
+//                .selectedSize(SizeResponse.fromSize(selectedSku.getSize()))
                 .selectedImage(ProductImageResponse.fromProductImage(selectedImage))
                 .skus(skuResponses)
                 .productImages(productImageResponses)

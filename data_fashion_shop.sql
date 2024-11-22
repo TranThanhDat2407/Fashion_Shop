@@ -8,8 +8,6 @@ WHERE 1 IS NULL
    OR p.category_id = 1
    OR cate.parent_id = 1;
 
-DELETE FROM categories
-
 INSERT INTO categories (name, parent_id) VALUES (N'Nam', NULL);
 INSERT INTO categories (name, parent_id) VALUES (N'Đồ mặc ngoài', (SELECT id FROM categories WHERE name = N'Nam'));
 INSERT INTO categories (name, parent_id) VALUES (N'Áo khoác', (SELECT id FROM categories WHERE name = N'Đồ mặc ngoài' AND parent_id = (SELECT id FROM categories WHERE name = N'Nam')));

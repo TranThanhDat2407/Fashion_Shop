@@ -12,7 +12,7 @@ import com.example.Fashion_Shop.model.User;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Cart {
+public class Cart extends BaseEntity {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
