@@ -31,11 +31,15 @@ spring:
             client-secret: YOUR_FACEBOOK_APP_SECRET
             redirect-uri: "TEST"
             user-info-uri:
-
             resource-server:
               oqaque-token:
                 introspection-uri: "https://googleapis.com"
 
 
+
 api:
   prefix: /api/v1
+
+
+
+
