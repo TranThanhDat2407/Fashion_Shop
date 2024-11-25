@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByStatus(String status);
-    List<Order> findByUserId(Integer userId);
+    List<Order> findByUser_Id(Integer userId);
 
     Optional<Order> findById(Long id);
     @Query("SELECT o FROM Order o JOIN FETCH o.orderDetails WHERE o.id = :id")

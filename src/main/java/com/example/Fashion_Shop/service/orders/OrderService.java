@@ -3,10 +3,7 @@ package com.example.Fashion_Shop.service.orders;
 import com.example.Fashion_Shop.dto.OrderDTO;
 import com.example.Fashion_Shop.dto.OrderDetailDTO;
 import com.example.Fashion_Shop.model.*;
-import com.example.Fashion_Shop.repository.OrderDetailRepository;
-import com.example.Fashion_Shop.repository.OrderPaymentRepository;
-import com.example.Fashion_Shop.repository.OrderRepository;
-import com.example.Fashion_Shop.repository.UserRepository;
+import com.example.Fashion_Shop.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,20 +21,40 @@ public class OrderService {
     private OrderDetailRepository orderDetailRepository;
 
     @Autowired
+    private SkuRepository skuRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private OrderPaymentRepository orderPaymentRepository;
     @Autowired
     private OrderRepository orderRepository;
+
+
     @Transactional
     public Order saveOrder(Order order) {
-        if(order.getOrderDetails() != null){
-            for(OrderDetail orderDetail : order.getOrderDetails()){
+        // Gọi kiểm tra và cập nhật tồn kho
+        updateInventory(order);
+
+        // Liên kết các chi tiết đơn hàng với đơn hàng chính
+        if (order.getOrderDetails() != null) {
+            for (OrderDetail orderDetail : order.getOrderDetails()) {
                 orderDetail.setOrder(order);
             }
         }
+
         return orderRepository.save(order);
+    }
+
+    @Transactional
+    public List<OrderDTO> getOrdersByUserId(Integer userId) {
+        List<Order> orders = orderRepository.findByUser_Id(userId);
+
+        // Chuyển đổi danh sách Order thành danh sách OrderDTO
+        return orders.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -167,5 +184,53 @@ public class OrderService {
         Order updatedOrder = orderRepository.save(existingOrder);
         return convertToDTO(updatedOrder);  // Chuyển về DTO để trả về
     }
+
+
+    @Transactional
+    public void updateInventory(Order order) {
+        for (OrderDetail detail : order.getOrderDetails()) {
+            SKU sku = skuRepository.findById(detail.getSku().getId())
+                    .orElseThrow(() -> new RuntimeException("SKU not found with ID: " + detail.getSku().getId()));
+
+            // Kiểm tra nếu số lượng trong kho đủ để đáp ứng đơn hàng
+            if (sku.getQtyInStock() < detail.getQuantity()) {
+                throw new RuntimeException("Not enough stock for product: " + sku.getProduct().getName());
+            }
+
+            // Giảm số lượng tồn kho
+            sku.setQtyInStock(sku.getQtyInStock() - detail.getQuantity());
+            skuRepository.save(sku);  // Lưu cập nhật vào cơ sở dữ liệu
+        }
+    }
+
+
+    @Transactional
+    public void cancelOrder(Integer orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Cập nhật lại tồn kho
+        restockInventory(order);
+
+        // Đặt trạng thái đơn hàng thành "Canceled"
+        order.setStatus("Canceled");
+        orderRepository.save(order);
+    }
+
+
+    @Transactional
+    public void restockInventory(Order order) {
+        for (OrderDetail detail : order.getOrderDetails()) {
+            SKU sku = skuRepository.findById(detail.getSku().getId())
+                    .orElseThrow(() -> new RuntimeException("SKU not found with ID: " + detail.getSku().getId()));
+
+            sku.setQtyInStock(sku.getQtyInStock() + detail.getQuantity());
+            skuRepository.save(sku);  // Cập nhật kho
+        }
+    }
+
+
+
+
 
 }

@@ -19,6 +19,17 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderDTO>> getOrdersByUserId(@PathVariable Integer userId) {
+        List<OrderDTO> orders = orderService.getOrdersByUserId(userId);
+
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(orders);
+    }
+
 
     @PostMapping
     public ResponseEntity<OrderDTO> createOrUpdateOrder(@RequestBody Order order) {
@@ -60,6 +71,9 @@ public class OrderController {
         orderService.deleteOrder(id);
         return ResponseEntity.ok().build();
     }
+
+
+
 
 
 }
