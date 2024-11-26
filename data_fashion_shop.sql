@@ -189,7 +189,7 @@ VALUES (3,11,2,784000,784000,15),--Áo Thun màu 18 Wine SIZE S M L
        (3,14,3,784000,784000,20),
        (3,14,4,784000,784000,0)
 
-Select * from orders
+Select * from categories
 Select * from order_detail
 
 INSERT INTO roles (name)

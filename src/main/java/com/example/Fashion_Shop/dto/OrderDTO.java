@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 public class OrderDTO {
     private Integer id;
+//    private Integer userId;
     private String shippingAddress;
     private String phoneNumber;
     private BigDecimal totalMoney;

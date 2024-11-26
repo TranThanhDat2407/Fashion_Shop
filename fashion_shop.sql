@@ -170,7 +170,7 @@ CREATE TABLE order_detail
 
 CREATE TABLE user_payments
 (
-    id               INT PRIMARY KEY,
+    id               INT IDENTITY (1,1) PRIMARY KEY,
     user_id          INT,
     card_number      NVARCHAR(30),
     card_holder_name NVARCHAR(50),
@@ -182,7 +182,7 @@ CREATE TABLE user_payments
 
 CREATE TABLE order_payments
 (
-    id                       INT PRIMARY KEY,
+    id                       INT IDENTITY (1,1) PRIMARY KEY,
     order_id                 INT,
     transaction_id           NVARCHAR(100),
     transaction_date         DATE,
@@ -192,4 +192,4 @@ CREATE TABLE order_payments
     FOREIGN KEY (order_id) REFERENCES orders (id)
 );
 
-SELECT * FROM products
+

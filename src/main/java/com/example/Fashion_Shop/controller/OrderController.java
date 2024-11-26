@@ -1,23 +1,28 @@
 package com.example.Fashion_Shop.controller;
 
 import com.example.Fashion_Shop.dto.OrderDTO;
+import com.example.Fashion_Shop.dto.OrderStatus;
 import com.example.Fashion_Shop.model.Order;
 import com.example.Fashion_Shop.service.orders.OrderService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderDTO>> getOrdersByUserId(@PathVariable Integer userId) {
@@ -36,15 +41,22 @@ public class OrderController {
         Order savedOrder = orderService.saveOrder(order);
         OrderDTO orderDTO = orderService.convertToDTO(savedOrder);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
-
     }
+
+    @PostMapping("/create-from-cart/{userId}")
+    public ResponseEntity<OrderDTO> createOrderFromCart(@PathVariable Long userId, Pageable pageable) {
+        Order savedOrder = orderService.createOrderFromCart(userId,pageable);
+        OrderDTO orderDTO = orderService.convertToDTO(savedOrder);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<OrderDTO> updateOrder(@PathVariable Integer id, @RequestBody OrderDTO updateDTO) {
         try {
             OrderDTO updatedOrder = orderService.updateOrder(id, updateDTO);
             return ResponseEntity.ok(updatedOrder);
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();  // Xử lý lỗi nếu Order không tồn tại
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -71,8 +83,6 @@ public class OrderController {
         orderService.deleteOrder(id);
         return ResponseEntity.ok().build();
     }
-
-
 
 
 

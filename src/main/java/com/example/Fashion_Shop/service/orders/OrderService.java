@@ -1,67 +1,128 @@
 package com.example.Fashion_Shop.service.orders;
 
+import com.example.Fashion_Shop.dto.CartItemDTO;
 import com.example.Fashion_Shop.dto.OrderDTO;
 import com.example.Fashion_Shop.dto.OrderDetailDTO;
 import com.example.Fashion_Shop.model.*;
 import com.example.Fashion_Shop.repository.*;
+import com.example.Fashion_Shop.response.cart.CartItemResponse;
+import com.example.Fashion_Shop.service.cart.CartService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
+@AllArgsConstructor
 @Service
 public class OrderService {
+
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
+    OrderPaymentRepository orderPaymentRepository;
+    @Autowired
+    private JavaMailSender mailSender;
 
     @Autowired
     private SkuRepository skuRepository;
 
     @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private OrderPaymentRepository orderPaymentRepository;
+    private CartService cartService;
+
     @Autowired
     private OrderRepository orderRepository;
 
 
+    // chưa được
+//@Transactional
+//public Order saveOrder(Order order) {
+//    if(order.getOrderDetails() != null){
+//        for(OrderDetail orderDetail : order.getOrderDetails()){
+//            orderDetail.setOrder(order);
+//        }
+//    }
+//    return orderRepository.save(order);
+//}
+
+    //    @Transactional
+//    public Order saveOrder(Order order) {
+//        if (order.getOrderDetails() != null) {
+//            for (OrderDetail orderDetail : order.getOrderDetails()) {
+//                orderDetail.setOrder(order);
+//                // Giả sử bạn lấy giá từ SKU
+//                if (orderDetail.getSku() != null) {
+//                    orderDetail.setPrice(orderDetail.getSku().getSalePrice());
+//                    orderDetail.setTotalMoney(orderDetail.getPrice() * orderDetail.getQuantity());
+//                } else {
+//                    throw new IllegalArgumentException("SKU is required for order detail");
+//                }
+//            }
+//        }
+//        return orderRepository.save(order);
+//    }
     @Transactional
     public Order saveOrder(Order order) {
-        // Gọi kiểm tra và cập nhật tồn kho
-        updateInventory(order);
+        if (order.getUser() != null && order.getUser().getId() != null) {
+            User user = userRepository.findById(order.getUser().getId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            order.setUser(user);
+        }
+        if (order.getPhoneNumber() == null || order.getPhoneNumber().isEmpty()) {
+            throw new RuntimeException("Phone number is required");
+        }
 
-        // Liên kết các chi tiết đơn hàng với đơn hàng chính
+        double totalMoney = 0;
+
         if (order.getOrderDetails() != null) {
             for (OrderDetail orderDetail : order.getOrderDetails()) {
                 orderDetail.setOrder(order);
+                SKU sku = skuRepository.findById(orderDetail.getSku().getId())
+                        .orElseThrow(() -> new RuntimeException("SKU not found"));
+
+                orderDetail.setPrice(sku.getSalePrice());
+                double orderDetailTotal = orderDetail.getPrice() * orderDetail.getQuantity();
+                orderDetail.setTotalMoney(orderDetailTotal);
+                totalMoney += orderDetailTotal;
             }
         }
 
+        order.setTotalMoney(BigDecimal.valueOf(totalMoney));
         return orderRepository.save(order);
     }
 
-    @Transactional
-    public List<OrderDTO> getOrdersByUserId(Integer userId) {
-        List<Order> orders = orderRepository.findByUser_Id(userId);
-
-        // Chuyển đổi danh sách Order thành danh sách OrderDTO
-        return orders.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
 
     @Transactional
     public List<OrderDTO> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
         return orders.stream().map(order -> convertToDTO(order)).collect(Collectors.toList());
     }
+
+    @Transactional
+    public List<OrderDTO> getOrdersByUserId(Integer userId) {
+        List<Order> orders = orderRepository.findByUser_Id(userId);
+
+        // Chuyển Order thành danh sách OrderDTO
+        return orders.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
     public Order getOrderById(int orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
@@ -76,6 +137,98 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
+
+    @Transactional
+    public Order createOrderFromCart(Long userId,Pageable pageable) {
+
+        Page<Cart> cartItems = cartRepository.findByUserId(userId, pageable);
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Giỏ hàng trống");
+        }
+
+        // Tạo một đối tượng Order mới
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        Order order = new Order();
+        order.setUser(user);
+        order.setShippingAddress(order.getShippingAddress());
+        order.setStatus("Pending");
+        order.setPhoneNumber(user.getPhone());
+        order.setTotalMoney(order.getTotalMoney());
+        order.setCreatedAt(new Date());
+
+
+
+        double totalMoney = cartItems.stream()
+                .mapToDouble(cartItem -> cartItem.getSku().getSalePrice() * cartItem.getQuantity())
+                .sum();
+
+        // Chuyển đổi từng CartItem thành OrderDetail
+        List<OrderDetail> orderDetails = cartItems.stream().map(cartItem -> {
+            SKU sku = cartItem.getSku();
+            int quantity = cartItem.getQuantity();
+            double price = sku.getSalePrice();
+
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setSku(sku);
+            orderDetail.setQuantity(quantity);
+            orderDetail.setPrice(price);
+            orderDetail.setTotalMoney(price * quantity);
+            orderDetail.setOrder(order);
+
+            return orderDetail;
+        }).collect(Collectors.toList());
+
+
+        order.setTotalMoney(BigDecimal.valueOf(totalMoney));
+        order.setOrderDetails(orderDetails);
+
+
+        Order savedOrder = orderRepository.save(order);
+
+
+        cartService.deleteAllCart(userId);
+
+        return savedOrder;
+    }
+
+
+
+    private void sendOrderConfirmationEmail(Order savedOrder) {
+        String recipientEmail = savedOrder.getUser().getEmail(); // Lấy email của khách hàng từ User
+        String subject = "Xác Nhận Đơn Hàng - #" + savedOrder.getId();
+        StringBuilder body = new StringBuilder();
+
+        body.append("Chào ").append(savedOrder.getUser().getName()).append(",<br><br>");
+        body.append("Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Đây là thông tin đơn hàng của bạn:<br>");
+        body.append("<b>Đơn hàng ID: </b>").append(savedOrder.getId()).append("<br>");
+        body.append("<b>Địa chỉ giao hàng: </b>").append(savedOrder.getShippingAddress()).append("<br>");
+        body.append("<b>Tổng tiền: </b>").append(savedOrder.getTotalMoney()).append("<br><br>");
+        body.append("<b>Chi tiết đơn hàng:</b><br>");
+
+        savedOrder.getOrderDetails().forEach(orderDetail -> {
+            body.append("Sản phẩm: ").append(orderDetail.getSku().getProduct().getName())
+                    .append(" - Số lượng: ").append(orderDetail.getQuantity())
+                    .append(" - Giá: ").append(orderDetail.getPrice()).append("<br>");
+        });
+
+        body.append("<br>Cảm ơn bạn đã mua sắm tại cửa hàng của chúng tôi!");
+
+        // Tạo và gửi email
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mailSender.createMimeMessage(), true);
+            helper.setTo(recipientEmail);
+            helper.setSubject(subject);
+            helper.setText(body.toString(), true);
+            mailSender.send(helper.getMimeMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
     public Order updateOrder(Long id, Order updatedOrder) {
         return orderRepository.findById(id)
                 .map(existingOrder -> {
@@ -87,7 +240,10 @@ public class OrderService {
                 }).orElseThrow(() -> new RuntimeException("Order not found with id " + id));
     }
 
-    public void updateOrderPayment(Long orderId, String transactionId, String paymentResponse, BigDecimal  totalAmount) {
+
+
+
+    public void updateOrderPayment(Long orderId, String transactionId, String paymentResponse, BigDecimal totalAmount) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -111,13 +267,18 @@ public class OrderService {
 
     public OrderDTO convertToDTO(Order order) {
         List<OrderDetailDTO> orderDetailDTOs = order.getOrderDetails().stream()
-                .map(detail -> OrderDetailDTO.builder()
-                        .id(detail.getId())
-                        .skuId(Math.toIntExact(detail.getSku().getId()))
-                        .quantity(detail.getQuantity())
-                        .price(detail.getPrice())
-                        .totalMoney(detail.getTotalMoney())
-                        .build())
+                .map(detail -> {
+                    // Kiểm tra nếu SKU không null
+                    SKU sku = detail.getSku();
+                    Long skuId = (sku != null) ? sku.getId() : null;
+                    return OrderDetailDTO.builder()
+                            .id(detail.getId())
+                            .skuId(Math.toIntExact(skuId))
+                            .quantity(detail.getQuantity())
+                            .price(detail.getPrice())
+                            .totalMoney(detail.getTotalMoney())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return OrderDTO.builder()
@@ -130,29 +291,6 @@ public class OrderService {
                 .build();
     }
 
-    public Order convertToEntity(OrderDTO orderDTO, User user) {
-        List<OrderDetail> orderDetails = orderDTO.getOrderDetails().stream()
-                .map(dto -> {
-                    OrderDetail detail = new OrderDetail();
-                    detail.setSku(new SKU(dto.getSkuId()));  // Tạo SKU với ID
-                    detail.setQuantity(dto.getQuantity());
-                    detail.setPrice(dto.getPrice());
-                    detail.setTotalMoney(dto.getTotalMoney());
-                    return detail;
-                }).collect(Collectors.toList());
-
-        Order order = new Order();
-        order.setShippingAddress(orderDTO.getShippingAddress());
-        order.setPhoneNumber(orderDTO.getPhoneNumber());
-        order.setTotalMoney(orderDTO.getTotalMoney());
-        order.setStatus(orderDTO.getStatus());
-        order.setUser(user);
-        order.setOrderDetails(orderDetails);
-
-        orderDetails.forEach(detail -> detail.setOrder(order));
-
-        return order;
-    }
 
     public OrderDTO updateOrder(Integer orderId, OrderDTO updateDTO) {
         // Tìm Order hiện tại
@@ -170,7 +308,7 @@ public class OrderService {
         List<OrderDetail> updatedDetails = updateDTO.getOrderDetails().stream()
                 .map(dto -> {
                     OrderDetail detail = new OrderDetail();
-                    detail.setSku(new SKU(dto.getSkuId()));  // Đặt SKU từ ID
+                    detail.setSku(new SKU(Math.toIntExact(dto.getSkuId())));  // Đặt SKU từ ID
                     detail.setQuantity(dto.getQuantity());
                     detail.setPrice(dto.getPrice());
                     detail.setTotalMoney(dto.getTotalMoney());
@@ -192,13 +330,12 @@ public class OrderService {
             SKU sku = skuRepository.findById(detail.getSku().getId())
                     .orElseThrow(() -> new RuntimeException("SKU not found with ID: " + detail.getSku().getId()));
 
-            // Kiểm tra nếu số lượng trong kho đủ để đáp ứng đơn hàng
-            if (sku.getQtyInStock() < detail.getQuantity()) {
+            // Giảm số lượng tồn kho
+            int remainingQty = sku.getQtyInStock() - detail.getQuantity();
+            if (remainingQty < 0) {
                 throw new RuntimeException("Not enough stock for product: " + sku.getProduct().getName());
             }
-
-            // Giảm số lượng tồn kho
-            sku.setQtyInStock(sku.getQtyInStock() - detail.getQuantity());
+            sku.setQtyInStock(remainingQty);
             skuRepository.save(sku);  // Lưu cập nhật vào cơ sở dữ liệu
         }
     }
@@ -231,6 +368,18 @@ public class OrderService {
 
 
 
+    private void checkAndUpdateInventory(SKU sku, int quantity) {
+        // Kiểm tra số lượng tồn kho
+        if (sku.getQtyInStock() < quantity) {
+            throw new IllegalArgumentException("Không đủ hàng trong kho cho SKU: " + sku.getId());
+        }
+
+        // Giảm số lượng tồn kho
+        sku.setQtyInStock(sku.getQtyInStock() - quantity);
+
+        // Lưu cập nhật vào database nếu cần thiết
+        skuRepository.save(sku);
+    }
 
 
 }

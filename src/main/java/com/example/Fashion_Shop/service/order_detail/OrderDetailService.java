@@ -66,7 +66,7 @@ public class OrderDetailService {
             dto.setQuantity(orderDetail.getQuantity());
             dto.setPrice(orderDetail.getPrice());
             dto.setTotalMoney(orderDetail.getTotalMoney());
-            dto.setSkuId(Math.toIntExact(orderDetail.getSku().getId()));
+            dto.setSkuId((orderDetail.getSku().getId()));
             return dto;
         }).collect(Collectors.toList());
     }
