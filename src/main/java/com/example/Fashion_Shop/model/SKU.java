@@ -30,6 +30,7 @@ public class SKU extends BaseEntity{
     private Double salePrice;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name="product_id")
     private Product product;
 
@@ -43,4 +44,7 @@ public class SKU extends BaseEntity{
     @ManyToOne
     @JoinColumn(name="size_value_id")
     private AttributeValue size;
+
+    public SKU(Integer skuId) {
+    }
 }

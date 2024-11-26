@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả thanh toán</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .result {
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f4f4f4;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<h1>Kết quả thanh toán</h1>
+<div id="result" class="result"></div>
+
+<script>
+    // Lấy các tham số từ URL (do VNPay trả về)
+    const urlParams = new URLSearchParams(window.location.search);
+    const responseCode = urlParams.get('vnp_ResponseCode');
+    const txnRef = urlParams.get('vnp_TxnRef');
+    const amount = urlParams.get('vnp_Amount');
+    const orderInfo = urlParams.get('vnp_OrderInfo');
+
+    let resultMessage = "";
+    let resultClass = "";
+
+    if (responseCode === "00") {
+        // Giao dịch thành công
+        resultMessage = `Thanh toán thành công!<br>Mã giao dịch: ${txnRef}<br>Số tiền: ${amount} VND<br>Thông tin đơn hàng: ${orderInfo}`;
+        resultClass = "success";
+    } else {
+        // Giao dịch thất bại
+        resultMessage = `Thanh toán thất bại!<br>Mã giao dịch: ${txnRef}<br>Lỗi: ${responseCode}`;
+        resultClass = "error";
+    }
+
+    // Hiển thị kết quả lên trang
+    document.getElementById('result').innerHTML = resultMessage;
+    document.getElementById('result').classList.add(resultClass);
+</script>
+</body>
+</html>
