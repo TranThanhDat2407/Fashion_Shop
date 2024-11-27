@@ -1,16 +1,10 @@
 package com.example.Fashion_Shop.controller;
 
-import com.example.Fashion_Shop.dto.CartItemDTO;
 import com.example.Fashion_Shop.dto.WishlistDTO;
-import com.example.Fashion_Shop.response.cart.CartItemResponse;
-import com.example.Fashion_Shop.response.cart.CartResponse;
-import com.example.Fashion_Shop.response.cart.TotalItemResponse;
-import com.example.Fashion_Shop.response.wishlist.TotalWishlistItemResponse;
 import com.example.Fashion_Shop.response.wishlist.WishlistItemResponse;
 import com.example.Fashion_Shop.response.wishlist.WishlistResponse;
 import com.example.Fashion_Shop.service.wishlist.WishlistService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
