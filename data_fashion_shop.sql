@@ -71,7 +71,6 @@ VALUES ('06 GRAY','06GRAY.jpg',1),
 
 SELECT * FROM products
 DELETE FROM products
-
 DBCC CHECKIDENT (products, RESEED, 0);
 INSERT INTO products (name, description, category_id)
 VALUES (
@@ -188,40 +187,5 @@ VALUES (3,11,2,784000,784000,15),--Áo Thun màu 18 Wine SIZE S M L
        (3,14,2,784000,784000,15),--Áo Thun màu 69 NAVY SIZE S M L
        (3,14,3,784000,784000,20),
        (3,14,4,784000,784000,0)
-
-Select * from orders
-Select * from order_detail
-
-INSERT INTO roles (name)
-VALUES ('ADMIN');
-
-
-INSERT INTO roles (name)
-VALUES ('USER');
-
-
-
-INSERT INTO users (name, email, phone, password, role_id, one_time_password, otp_requested_time, is_active)
-VALUES
-    ('Van Tai',
-     'taibvps37458@fpt.edu.vn',
-     '1234567890',
-     '12345',
-     (SELECT id FROM roles WHERE roles.name = 'ADMIN'),
-     'otp123',
-     GETDATE(),
-     1);
-
-
-INSERT INTO users (name, email, phone, password, role_id, one_time_password, otp_requested_time, is_active)
-VALUES
-    ('Van Tai 2',
-     'bvt.vantai@gmail.com',
-     '0399787124',
-     '12345',
-     (SELECT id FROM roles WHERE roles.name = 'USER'),
-     'otp456',
-     GETDATE(),
-     1);
 
 
