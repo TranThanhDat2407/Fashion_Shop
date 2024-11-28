@@ -46,7 +46,7 @@ public class PaymentService {
 //    }
 
 
-    public String processPayment(int orderId, BigDecimal amount) {
+    public String processPayment(Long orderId, BigDecimal amount) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
 

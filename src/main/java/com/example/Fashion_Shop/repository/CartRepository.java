@@ -18,6 +18,13 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
             "WHERE c.user.id = :userId")
     Page<Cart> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
+
+    @Query("SELECT c FROM Cart c " +
+            "WHERE c.user.id = :userId")
+    List<Cart> findByUserId(@Param("userId") Long userId);
+
+
+
     @Query("SELECT c FROM Cart c " +
             "WHERE c.user.id = :userId AND c.sku.id = :skuId")
     Optional<Cart> findByUserIdAndSKU(@Param("userId") Long userId, Long skuId);
@@ -25,6 +32,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Query("SELECT SUM(c.quantity) FROM Cart c WHERE c.user.id = :userId")
     Integer sumQuantityByUserId(@Param("userId") Long userId);
 
+    @Modifying
     @Query("DELETE FROM Cart c WHERE c.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);
 }

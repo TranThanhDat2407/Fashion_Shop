@@ -16,16 +16,16 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "orders")
-public class Order {
+public class Order  extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "shipping_address", nullable = false)
-    private String shippingAddress;
-
     @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Column(name = "shipping_address", nullable = false)
+    private String shippingAddress;
 
     @Column(name = "total_money", nullable = false)
     private BigDecimal totalMoney;
@@ -33,25 +33,24 @@ public class Order {
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "create_at", updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
-
-    @Column(name = "update_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
-
     @Column(name = "QR_code")
     private String qrCode;
 
     @Column(name = "is_active")
     private Boolean isActive = false;
 
-    @ManyToOne
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
+    @Column(name = "shipping_method")
+    private String shippingMethod;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<OrderDetail> orderDetails;
 }

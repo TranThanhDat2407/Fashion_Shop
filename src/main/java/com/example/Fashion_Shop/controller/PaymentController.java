@@ -24,13 +24,13 @@ public class PaymentController {
     private final OrderService orderService;
 
     @PostMapping("/process/{orderId}")
-    public ResponseEntity<String> processPayment(@PathVariable("orderId") int orderId) {
+    public ResponseEntity<String> processPayment(@PathVariable("orderId") Long orderId) {
         try {
-            // Truy xuất thông tin đơn hàng từ service
+
             Order order = orderService.getOrderById(orderId);
             BigDecimal amount = order.getTotalMoney();  // Lấy số tiền từ đơn hàng
 
-            // Xử lý thanh toán với số tiền đã lấy được
+
             String paymentStatus = paymentService.processPayment(orderId, amount);
             return ResponseEntity.ok(paymentStatus);
         } catch (Exception e) {

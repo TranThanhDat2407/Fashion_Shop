@@ -6,6 +6,7 @@ import com.example.Fashion_Shop.dto.OrderDetailDTO;
 import com.example.Fashion_Shop.model.*;
 import com.example.Fashion_Shop.repository.*;
 import com.example.Fashion_Shop.response.cart.CartItemResponse;
+import com.example.Fashion_Shop.response.cart.CartResponse;
 import com.example.Fashion_Shop.service.cart.CartService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,25 +28,28 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
 
-    @Autowired
+
     OrderPaymentRepository orderPaymentRepository;
-    @Autowired
-    private JavaMailSender mailSender;
 
-    @Autowired
-    private SkuRepository skuRepository;
+    private final JavaMailSender mailSender;
 
-    @Autowired
-    private CartRepository cartRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final SkuRepository skuRepository;
 
-    @Autowired
+
+    private final CartRepository cartRepository;
+
+
+    private final UserRepository userRepository;
+
+
     private CartService cartService;
 
-    @Autowired
-    private OrderRepository orderRepository;
+
+  private final  AddressRepository  addressRepository;
+
+
+    private final OrderRepository orderRepository;
 
 
     // chưa được
@@ -123,7 +127,7 @@ public class OrderService {
     }
 
 
-    public Order getOrderById(int orderId) {
+    public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
     }
@@ -139,28 +143,50 @@ public class OrderService {
 
 
     @Transactional
-    public Order createOrderFromCart(Long userId,Pageable pageable) {
+    public Order createOrderFromCart(Long userId) {
 
-        Page<Cart> cartItems = cartRepository.findByUserId(userId, pageable);
+        List<Cart> cartItems = cartRepository.findByUserId(userId);
+
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Giỏ hàng trống");
         }
 
-        // Tạo một đối tượng Order mới
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        // Tạo một đối tượng Order mới
         Order order = new Order();
         order.setUser(user);
-        order.setShippingAddress(order.getShippingAddress());
         order.setStatus("Pending");
-        order.setPhoneNumber(user.getPhone());
-        order.setTotalMoney(order.getTotalMoney());
-        order.setCreatedAt(new Date());
 
+        Address defaultAddresses = addressRepository.findByUserIdAndIsDefaultTrue(userId);
+        if (defaultAddresses == null) {
+            throw new RuntimeException("Người dùng chưa thiết lập địa chỉ mặc định.");
+        }
+        order.setShippingAddress(defaultAddresses.getStreet() + ", "
+                + defaultAddresses.getWard() + ", "
+                + defaultAddresses.getCity());
+
+        order.setPhoneNumber(user.getPhone());
 
 
         double totalMoney = cartItems.stream()
                 .mapToDouble(cartItem -> cartItem.getSku().getSalePrice() * cartItem.getQuantity())
                 .sum();
+
+        order.setTotalMoney(BigDecimal.valueOf(totalMoney));
+
+
+        if(order.getShippingMethod() == null || order.getShippingMethod().isEmpty()) {
+            throw new RuntimeException("Bạn chưa chọn phương thức giao hàng");
+        }else {
+            order.setShippingMethod(order.getShippingMethod());
+        }
+
+        if(order.getPaymentMethod() == null || order.getPaymentMethod().isEmpty()){
+            throw new RuntimeException("Bạn chưa chọn phương thức thanh toán");
+        }else {
+            order.setPaymentMethod(order.getPaymentMethod());
+        }
+
 
         // Chuyển đổi từng CartItem thành OrderDetail
         List<OrderDetail> orderDetails = cartItems.stream().map(cartItem -> {
@@ -176,10 +202,9 @@ public class OrderService {
             orderDetail.setOrder(order);
 
             return orderDetail;
+
         }).collect(Collectors.toList());
 
-
-        order.setTotalMoney(BigDecimal.valueOf(totalMoney));
         order.setOrderDetails(orderDetails);
 
 
@@ -194,7 +219,7 @@ public class OrderService {
 
 
     private void sendOrderConfirmationEmail(Order savedOrder) {
-        String recipientEmail = savedOrder.getUser().getEmail(); // Lấy email của khách hàng từ User
+        String recipientEmail = savedOrder.getUser().getEmail();
         String subject = "Xác Nhận Đơn Hàng - #" + savedOrder.getId();
         StringBuilder body = new StringBuilder();
 
@@ -213,7 +238,7 @@ public class OrderService {
 
         body.append("<br>Cảm ơn bạn đã mua sắm tại cửa hàng của chúng tôi!");
 
-        // Tạo và gửi email
+
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mailSender.createMimeMessage(), true);
             helper.setTo(recipientEmail);
@@ -265,15 +290,48 @@ public class OrderService {
 
 
 
+//    public OrderDTO convertToDTO(Order order) {
+//        List<OrderDetailDTO> orderDetailDTOs = order.getOrderDetails().stream()
+//                .map(detail -> {
+//                    // Kiểm tra nếu SKU không null
+//                    SKU sku = detail.getSku();
+//                    Long skuId = (sku != null) ? sku.getId() : null;
+//                    return OrderDetailDTO.builder()
+//                            .id(detail.getId())
+//                            .skuId(Math.toIntExact(skuId))
+//                            .quantity(detail.getQuantity())
+//                            .price(detail.getPrice())
+//                            .totalMoney(detail.getTotalMoney())
+//                            .build();
+//                })
+//                .collect(Collectors.toList());
+//
+//        return OrderDTO.builder()
+//                .orderId(order.getId())
+//                .shippingAddress(order.getShippingAddress())
+//                .phoneNumber(order.getPhoneNumber())
+//                .totalMoney(order.getTotalMoney())
+//                .status(order.getStatus())
+//                .qrCode(order.getQrCode())
+//                .paymentMethod(order.getPaymentMethod())
+//                .shippingMethod(order.getShippingMethod())
+//                .orderDetails(order.getOrderDetails())
+//                .build();
+//
+//    }
+
+
     public OrderDTO convertToDTO(Order order) {
         List<OrderDetailDTO> orderDetailDTOs = order.getOrderDetails().stream()
                 .map(detail -> {
-                    // Kiểm tra nếu SKU không null
                     SKU sku = detail.getSku();
                     Long skuId = (sku != null) ? sku.getId() : null;
+                    if (skuId != null && skuId > Integer.MAX_VALUE) {
+                        throw new IllegalArgumentException("SKU ID vượt quá giới hạn của int");
+                    }
                     return OrderDetailDTO.builder()
                             .id(detail.getId())
-                            .skuId(Math.toIntExact(skuId))
+                            .skuId(skuId != null ? Math.toIntExact(skuId) : null)
                             .quantity(detail.getQuantity())
                             .price(detail.getPrice())
                             .totalMoney(detail.getTotalMoney())
@@ -282,46 +340,51 @@ public class OrderService {
                 .collect(Collectors.toList());
 
         return OrderDTO.builder()
-                .id(order.getId())
+                .orderId(order.getId())
                 .shippingAddress(order.getShippingAddress())
-                .phoneNumber(order.getPhoneNumber())
-                .totalMoney(order.getTotalMoney())
+                .phoneNumber(order.getPhoneNumber() != null ? order.getPhoneNumber() : "")
+                .totalMoney(order.getTotalMoney() != null ? order.getTotalMoney() : BigDecimal.ZERO)
                 .status(order.getStatus())
+                .qrCode(order.getQrCode() != null ? order.getQrCode() : "")
+                .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod() : "Thanh toán khi nhận hàng")
+                .shippingMethod(order.getShippingMethod() != null ? order.getShippingMethod() : "Giao hàng nhanh")
                 .orderDetails(orderDetailDTOs)
                 .build();
     }
 
 
-    public OrderDTO updateOrder(Integer orderId, OrderDTO updateDTO) {
-        // Tìm Order hiện tại
-        Order existingOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        // Cập nhật thông tin Order
-        existingOrder.setShippingAddress(updateDTO.getShippingAddress());
-        existingOrder.setPhoneNumber(updateDTO.getPhoneNumber());
-        existingOrder.setTotalMoney(updateDTO.getTotalMoney());
-        existingOrder.setStatus(updateDTO.getStatus());
 
 
-        existingOrder.getOrderDetails().clear();  // Xóa các chi tiết hiện tại
-        List<OrderDetail> updatedDetails = updateDTO.getOrderDetails().stream()
-                .map(dto -> {
-                    OrderDetail detail = new OrderDetail();
-                    detail.setSku(new SKU(Math.toIntExact(dto.getSkuId())));  // Đặt SKU từ ID
-                    detail.setQuantity(dto.getQuantity());
-                    detail.setPrice(dto.getPrice());
-                    detail.setTotalMoney(dto.getTotalMoney());
-                    detail.setOrder(existingOrder);  // Liên kết với Order
-                    return detail;
-                }).collect(Collectors.toList());
-
-        existingOrder.setOrderDetails(updatedDetails);
-
-        // Lưu Order và các OrderDetails mới
-        Order updatedOrder = orderRepository.save(existingOrder);
-        return convertToDTO(updatedOrder);  // Chuyển về DTO để trả về
-    }
+//    public OrderDTO updateOrder(Integer orderId, OrderDTO updateDTO) {
+//        // Tìm Order hiện tại
+//        Order existingOrder = orderRepository.findById(orderId)
+//                .orElseThrow(() -> new RuntimeException("Order not found"));
+//
+//        // Cập nhật thông tin Order
+//        existingOrder.setShippingAddress(updateDTO.getShippingAddress());
+//        existingOrder.setPhoneNumber(updateDTO.getPhoneNumber());
+//        existingOrder.setTotalMoney(updateDTO.getTotalMoney());
+//        existingOrder.setStatus(updateDTO.getStatus());
+//
+//
+//        existingOrder.getOrderDetails().clear();  // Xóa các chi tiết hiện tại
+//        List<OrderDetail> updatedDetails = updateDTO.getOrderDetails().stream()
+//                .map(dto -> {
+//                    OrderDetail detail = new OrderDetail();
+//                    detail.setSku(new SKU(Math.toIntExact(dto.getSkuId())));  // Đặt SKU từ ID
+//                    detail.setQuantity(dto.getQuantity());
+//                    detail.setPrice(dto.getPrice());
+//                    detail.setTotalMoney(dto.getTotalMoney());
+//                    detail.setOrder(existingOrder);  // Liên kết với Order
+//                    return detail;
+//                }).collect(Collectors.toList());
+//
+//        existingOrder.setOrderDetails(updatedDetails);
+//
+//        // Lưu Order và các OrderDetails mới
+//        Order updatedOrder = orderRepository.save(existingOrder);
+//        return convertToDTO(updatedOrder);  // Chuyển về DTO để trả về
+//    }
 
 
     @Transactional

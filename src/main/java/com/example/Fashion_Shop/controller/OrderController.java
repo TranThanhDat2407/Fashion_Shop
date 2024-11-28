@@ -20,8 +20,8 @@ import java.util.Optional;
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 
-    @Autowired
-    private OrderService orderService;
+
+    private final OrderService orderService;
 
 
     @GetMapping("/user/{userId}")
@@ -44,21 +44,24 @@ public class OrderController {
     }
 
     @PostMapping("/create-from-cart/{userId}")
-    public ResponseEntity<OrderDTO> createOrderFromCart(@PathVariable Long userId, Pageable pageable) {
-        Order savedOrder = orderService.createOrderFromCart(userId,pageable);
+    public ResponseEntity<OrderDTO> createOrderFromCart(@PathVariable Long userId) {
+
+        Order savedOrder = orderService.createOrderFromCart(userId);
+
         OrderDTO orderDTO = orderService.convertToDTO(savedOrder);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderDTO> updateOrder(@PathVariable Integer id, @RequestBody OrderDTO updateDTO) {
-        try {
-            OrderDTO updatedOrder = orderService.updateOrder(id, updateDTO);
-            return ResponseEntity.ok(updatedOrder);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<OrderDTO> updateOrder(@PathVariable Integer id, @RequestBody OrderDTO updateDTO) {
+//        try {
+//            OrderDTO updatedOrder = orderService.updateOrder(id, updateDTO);
+//            return ResponseEntity.ok(updatedOrder);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
 
     @GetMapping
     public List<OrderDTO> getAllOrders() {
