@@ -11,4 +11,7 @@ public class OrderDetailDTO {
     private Integer quantity;
     private Double price;
     private Double totalMoney;
+
+    public void setSkuId(Long id) {
+    }
 }

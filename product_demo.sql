@@ -59,7 +59,7 @@ VALUES ('06 GRAY','06GRAY.jpg',3),
        ('32 BEIGE','32BEIGE.jpg',3),--color sản phẩm 7
         ('70 NAVY','70NAVY.jpg',3)
 
-SELECT * FROM images
+SELECT * FROM product_images
 WHERE product_id = 6;
 
 INSERT INTO images(product_id, color_value_id, image_url) --ảnh sản phẩm 5

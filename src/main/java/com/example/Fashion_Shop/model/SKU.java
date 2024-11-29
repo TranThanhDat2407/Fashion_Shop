@@ -31,7 +31,7 @@ public class SKU extends BaseEntity{
 
     @ManyToOne
     @JsonBackReference
-    @JoinColumn(name="product_id")
+    @JoinColumn(name="product_id", referencedColumnName = "id")
     private Product product;
 
     @OneToMany(mappedBy = "sku", cascade = CascadeType.ALL)
@@ -44,6 +44,7 @@ public class SKU extends BaseEntity{
     @ManyToOne
     @JoinColumn(name="size_value_id")
     private AttributeValue size;
+
 
     public SKU(Integer skuId) {
     }
