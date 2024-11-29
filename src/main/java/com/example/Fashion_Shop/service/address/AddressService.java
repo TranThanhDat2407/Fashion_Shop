@@ -1,7 +1,9 @@
 package com.example.Fashion_Shop.service.address;
 
 import com.example.Fashion_Shop.model.Address;
+import com.example.Fashion_Shop.model.User;
 import com.example.Fashion_Shop.repository.AddressRepository;
+import com.example.Fashion_Shop.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,10 +17,47 @@ public class AddressService {
     @Autowired
     private AddressRepository addressRepository;
 
+    @Autowired
+    private UserRepository userRepository;
 
-    public Address saveAddress(Address address) {
+//    public Address saveAddress(Address address) {
+//        return addressRepository.save(address);
+//    }
+public Address saveAddress(Address address) {
+    if (address.getId() != null) {
+        Optional<Address> existingAddress = addressRepository.findById(address.getId());
+        if (existingAddress.isPresent()) {
+            Address updatedAddress = existingAddress.get();
+            updatedAddress.setCity(address.getCity());
+            updatedAddress.setWard(address.getWard());
+            updatedAddress.setStreet(address.getStreet());
+            updatedAddress.setIsDefault(address.getIsDefault());
+
+            if (address.getUser() == null && address.getUser().getId() != null) {
+                User user = userRepository.findById(address.getUser().getId())
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                updatedAddress.setUser(user);
+            }
+
+            return addressRepository.save(updatedAddress);
+        } else {
+            throw new IllegalArgumentException("Address with the given ID does not exist.");
+        }
+    } else {
+        if (address.getUser() == null && address.getUser().getId() != null) {
+            User user = userRepository.findById(address.getUser().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            address.setUser(user);
+        }
+
         return addressRepository.save(address);
     }
+}
+
+
+
+
+
 
 
     public List<Address> getAllAddresses() {
@@ -31,8 +70,13 @@ public class AddressService {
     }
 
 
-    public void deleteAddress(Integer id) {
-        addressRepository.deleteById(id);
+    public boolean deleteAddress(Integer id) {
+        Optional<Address> addressOptional = addressRepository.findById(id);
+        if (addressOptional.isPresent()) {
+            addressRepository.deleteById(id); // Xóa địa chỉ nếu tồn tại
+            return true; // Địa chỉ đã được xóa thành công
+        }
+        return false; // Không tìm thấy địa chỉ để xóa
     }
 
 
@@ -40,11 +84,18 @@ public class AddressService {
         return addressRepository.findAllByUser_Id(userId);
     }
 
-    public void setDefaultAddress(Integer addressId) {
-        addressRepository.findById(addressId).ifPresent(address -> {
+
+
+    public boolean setDefaultAddress(Integer addressId) {
+        Optional<Address> addressOptional = addressRepository.findById(addressId);
+        if (addressOptional.isPresent()) {
+            Address address = addressOptional.get();
+            // Cập nhật địa chỉ này thành mặc định
             address.setIsDefault(true);
             addressRepository.save(address);
-        });
+            return true; // Địa chỉ đã được cập nhật thành công
+        }
+        return false; // Không tìm thấy địa chỉ
     }
 
 }

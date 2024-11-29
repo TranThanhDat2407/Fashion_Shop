@@ -1,24 +1,17 @@
 package com.example.Fashion_Shop.service.orders;
 
-import com.example.Fashion_Shop.dto.CartItemDTO;
 import com.example.Fashion_Shop.dto.OrderDTO;
 import com.example.Fashion_Shop.dto.OrderDetailDTO;
 import com.example.Fashion_Shop.model.*;
 import com.example.Fashion_Shop.repository.*;
-import com.example.Fashion_Shop.response.cart.CartItemResponse;
-import com.example.Fashion_Shop.response.cart.CartResponse;
 import com.example.Fashion_Shop.service.cart.CartService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -46,68 +39,10 @@ public class OrderService {
     private CartService cartService;
 
 
-  private final  AddressRepository  addressRepository;
+    private final AddressRepository addressRepository;
 
 
     private final OrderRepository orderRepository;
-
-
-    // chưa được
-//@Transactional
-//public Order saveOrder(Order order) {
-//    if(order.getOrderDetails() != null){
-//        for(OrderDetail orderDetail : order.getOrderDetails()){
-//            orderDetail.setOrder(order);
-//        }
-//    }
-//    return orderRepository.save(order);
-//}
-
-    //    @Transactional
-//    public Order saveOrder(Order order) {
-//        if (order.getOrderDetails() != null) {
-//            for (OrderDetail orderDetail : order.getOrderDetails()) {
-//                orderDetail.setOrder(order);
-//                // Giả sử bạn lấy giá từ SKU
-//                if (orderDetail.getSku() != null) {
-//                    orderDetail.setPrice(orderDetail.getSku().getSalePrice());
-//                    orderDetail.setTotalMoney(orderDetail.getPrice() * orderDetail.getQuantity());
-//                } else {
-//                    throw new IllegalArgumentException("SKU is required for order detail");
-//                }
-//            }
-//        }
-//        return orderRepository.save(order);
-//    }
-    @Transactional
-    public Order saveOrder(Order order) {
-        if (order.getUser() != null && order.getUser().getId() != null) {
-            User user = userRepository.findById(order.getUser().getId())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            order.setUser(user);
-        }
-        if (order.getPhoneNumber() == null || order.getPhoneNumber().isEmpty()) {
-            throw new RuntimeException("Phone number is required");
-        }
-
-        double totalMoney = 0;
-
-        if (order.getOrderDetails() != null) {
-            for (OrderDetail orderDetail : order.getOrderDetails()) {
-                orderDetail.setOrder(order);
-                SKU sku = skuRepository.findById(orderDetail.getSku().getId())
-                        .orElseThrow(() -> new RuntimeException("SKU not found"));
-
-                orderDetail.setPrice(sku.getSalePrice());
-                double orderDetailTotal = orderDetail.getPrice() * orderDetail.getQuantity();
-                orderDetail.setTotalMoney(orderDetailTotal);
-                totalMoney += orderDetailTotal;
-            }
-        }
-
-        order.setTotalMoney(BigDecimal.valueOf(totalMoney));
-        return orderRepository.save(order);
-    }
 
 
     @Transactional
@@ -175,15 +110,15 @@ public class OrderService {
         order.setTotalMoney(BigDecimal.valueOf(totalMoney));
 
 
-        if(order.getShippingMethod() == null || order.getShippingMethod().isEmpty()) {
+        if (order.getShippingMethod() == null || order.getShippingMethod().isEmpty()) {
             throw new RuntimeException("Bạn chưa chọn phương thức giao hàng");
-        }else {
+        } else {
             order.setShippingMethod(order.getShippingMethod());
         }
 
-        if(order.getPaymentMethod() == null || order.getPaymentMethod().isEmpty()){
+        if (order.getPaymentMethod() == null || order.getPaymentMethod().isEmpty()) {
             throw new RuntimeException("Bạn chưa chọn phương thức thanh toán");
-        }else {
+        } else {
             order.setPaymentMethod(order.getPaymentMethod());
         }
 
@@ -215,7 +150,6 @@ public class OrderService {
 
         return savedOrder;
     }
-
 
 
     private void sendOrderConfirmationEmail(Order savedOrder) {
@@ -251,9 +185,6 @@ public class OrderService {
     }
 
 
-
-
-
     public Order updateOrder(Long id, Order updatedOrder) {
         return orderRepository.findById(id)
                 .map(existingOrder -> {
@@ -264,8 +195,6 @@ public class OrderService {
                     return orderRepository.save(existingOrder);
                 }).orElseThrow(() -> new RuntimeException("Order not found with id " + id));
     }
-
-
 
 
     public void updateOrderPayment(Long orderId, String transactionId, String paymentResponse, BigDecimal totalAmount) {
@@ -287,7 +216,6 @@ public class OrderService {
 
         orderPaymentRepository.save(payment);
     }
-
 
 
 //    public OrderDTO convertToDTO(Order order) {
@@ -351,8 +279,6 @@ public class OrderService {
                 .orderDetails(orderDetailDTOs)
                 .build();
     }
-
-
 
 
 //    public OrderDTO updateOrder(Integer orderId, OrderDTO updateDTO) {
@@ -428,7 +354,6 @@ public class OrderService {
             skuRepository.save(sku);  // Cập nhật kho
         }
     }
-
 
 
     private void checkAndUpdateInventory(SKU sku, int quantity) {

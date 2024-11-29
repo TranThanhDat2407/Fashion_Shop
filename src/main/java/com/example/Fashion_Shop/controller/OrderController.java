@@ -36,12 +36,12 @@ public class OrderController {
     }
 
 
-    @PostMapping
-    public ResponseEntity<OrderDTO> createOrUpdateOrder(@RequestBody Order order) {
-        Order savedOrder = orderService.saveOrder(order);
-        OrderDTO orderDTO = orderService.convertToDTO(savedOrder);
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
-    }
+//    @PostMapping
+//    public ResponseEntity<OrderDTO> createOrUpdateOrder(@RequestBody Order order) {
+//        Order savedOrder = orderService.saveOrder(order);
+//        OrderDTO orderDTO = orderService.convertToDTO(savedOrder);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
+//    }
 
     @PostMapping("/create-from-cart/{userId}")
     public ResponseEntity<OrderDTO> createOrderFromCart(@PathVariable Long userId) {
