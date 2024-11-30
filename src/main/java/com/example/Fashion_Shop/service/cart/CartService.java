@@ -8,7 +8,6 @@ import com.example.Fashion_Shop.repository.CartRepository;
 import com.example.Fashion_Shop.repository.SkuRepository;
 import com.example.Fashion_Shop.repository.UserRepository;
 import com.example.Fashion_Shop.response.cart.CartItemResponse;
-import com.example.Fashion_Shop.response.cart.CartResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
