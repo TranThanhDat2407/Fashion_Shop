@@ -1,6 +1,5 @@
 server:
   port: 8080
-
 spring:
   mail:
     host: smtp.gmail.com
@@ -47,6 +46,7 @@ spring:
 #            resource-server:
 #              oqaque-token:
 #                introspection-uri: "https://googleapis.com"
+
 
 
 api:

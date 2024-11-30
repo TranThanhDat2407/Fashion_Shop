@@ -11,4 +11,7 @@ import java.util.Optional;
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
     @Query("SELECT pi.imageUrl FROM ProductImage pi WHERE pi.product.id = :productId AND pi.color.id = :colorId")
     Optional<String> findImageByProductAndColor(@Param("productId") Long productId, @Param("colorId") Long colorId);
+    @Query("SELECT pi FROM ProductImage pi " +
+            "WHERE pi.color.id = :colorId AND pi.product.id = :productId")
+    ProductImage findByColorIdAndProductId(@Param("colorId") Long colorId,@Param("productId") Long productId);
 }

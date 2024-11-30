@@ -116,10 +116,6 @@ CREATE TABLE carts
     FOREIGN KEY (sku_id) REFERENCES SKUs (id)
 )
 
-ALTER TABLE carts
-ADD create_at DATETIME DEFAULT GETDATE() NOT NULL,
-    update_at DATETIME DEFAULT GETDATE() NOT NULL;
-
 CREATE TABLE wishlist
 (
     id      INT IDENTITY (1,1),
@@ -174,7 +170,7 @@ CREATE TABLE order_detail
 
 CREATE TABLE user_payments
 (
-    id               INT PRIMARY KEY,
+    id               INT IDENTITY (1,1) PRIMARY KEY,
     user_id          INT,
     card_number      NVARCHAR(30),
     card_holder_name NVARCHAR(50),
@@ -186,7 +182,7 @@ CREATE TABLE user_payments
 
 CREATE TABLE order_payments
 (
-    id                       INT PRIMARY KEY,
+    id                       INT IDENTITY (1,1) PRIMARY KEY,
     order_id                 INT,
     transaction_id           NVARCHAR(100),
     transaction_date         DATE,
@@ -197,18 +193,19 @@ CREATE TABLE order_payments
 );
 
 CREATE TABLE tokens (
-    id int IDENTITY(1,1) PRIMARY KEY,
-    token NVARCHAR(255) NOT NULL,
-    refresh_token NVARCHAR(255) NOT NULL,
-    token_type NVARCHAR(50) NOT NULL,
-    expiration_date DATETIME NOT NULL,
-    refresh_expiration_date DATETIME NOT NULL,
-    is_mobile BIT NOT NULL,
-    revoked BIT NOT NULL,
-    expired BIT NOT NULL,
-    user_id int FOREIGN KEY REFERENCES users(id)
+                        id int IDENTITY(1,1) PRIMARY KEY,
+                        token NVARCHAR(255) NOT NULL,
+                        refresh_token NVARCHAR(255) NOT NULL,
+                        token_type NVARCHAR(50) NOT NULL,
+                        expiration_date DATETIME NOT NULL,
+                        refresh_expiration_date DATETIME NOT NULL,
+                        is_mobile BIT NOT NULL,
+                        revoked BIT NOT NULL,
+                        expired BIT NOT NULL,
+                        user_id int FOREIGN KEY REFERENCES users(id)
 );
 
+SELECT * FROM products
 
 ALTER TABLE users
 ADD facebook_account_id varchar(255),
