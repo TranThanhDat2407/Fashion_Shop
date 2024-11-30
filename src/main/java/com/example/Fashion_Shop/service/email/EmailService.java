@@ -37,7 +37,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(body, true);  // true để gửi email dạng HTML
+            helper.setText(body, true);
 
             mailSender.send(message);
         } catch (MessagingException e) {

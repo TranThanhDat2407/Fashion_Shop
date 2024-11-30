@@ -83,7 +83,7 @@ public class AddressController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Address>> getAddressesByUserId(@PathVariable @Min(1) Integer userId) {
+    public ResponseEntity<List<Address>> getAddressesByUserId(@PathVariable @Min(1) Long userId) {
         List<Address> addresses = addressService.getAddressesByUserId(userId);
         if (addresses.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(addresses); // Trả về danh sách trống

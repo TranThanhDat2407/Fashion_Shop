@@ -99,7 +99,6 @@ public class OrderService {
         order.setShippingAddress(defaultAddresses.getStreet() + ", "
                 + defaultAddresses.getWard() + ", "
                 + defaultAddresses.getCity());
-
         order.setPhoneNumber(user.getPhone());
 
 
@@ -111,14 +110,17 @@ public class OrderService {
 
 
         if (order.getShippingMethod() == null || order.getShippingMethod().isEmpty()) {
-            throw new RuntimeException("Bạn chưa chọn phương thức giao hàng");
+//            throw new RuntimeException("Bạn chưa chọn phương thức giao hàng");
+            order.setShippingMethod("Giao hàng nhanh");
         } else {
             order.setShippingMethod(order.getShippingMethod());
         }
 
         if (order.getPaymentMethod() == null || order.getPaymentMethod().isEmpty()) {
-            throw new RuntimeException("Bạn chưa chọn phương thức thanh toán");
+//            throw new RuntimeException("Bạn chưa chọn phương thức thanh toán");
+            order.setPaymentMethod("Thanh toán khi nhận hàng");
         } else {
+
             order.setPaymentMethod(order.getPaymentMethod());
         }
 
@@ -136,6 +138,8 @@ public class OrderService {
             orderDetail.setTotalMoney(price * quantity);
             orderDetail.setOrder(order);
 
+            System.out.println("OrderDetail chuẩn bị lưu, ID trước khi lưu: " + orderDetail.getId()); // Kiểm tra ID
+
             return orderDetail;
 
         }).collect(Collectors.toList());
@@ -144,8 +148,13 @@ public class OrderService {
 
 
         Order savedOrder = orderRepository.save(order);
+        System.out.println("Order đã lưu với ID: " + savedOrder.getId());
+        savedOrder = orderRepository.findById(savedOrder.getId())
+                .orElseThrow(() -> new RuntimeException("Order không tồn tại"));
 
-
+        for (OrderDetail detail : savedOrder.getOrderDetails()) {
+            System.out.println("OrderDetail đã lưu với ID: " + detail.getId()); // In ID sau khi lưu
+        }
         cartService.deleteAllCart(userId);
 
         return savedOrder;
@@ -252,10 +261,11 @@ public class OrderService {
     public OrderDTO convertToDTO(Order order) {
         List<OrderDetailDTO> orderDetailDTOs = order.getOrderDetails().stream()
                 .map(detail -> {
+                    System.out.println("OrderDetail ID: " + detail.getId());
                     SKU sku = detail.getSku();
                     Long skuId = (sku != null) ? sku.getId() : null;
                     if (skuId != null && skuId > Integer.MAX_VALUE) {
-                        throw new IllegalArgumentException("SKU ID vượt quá giới hạn của int");
+                        throw new IllegalArgumentException("SKU ID vượt quá giới hạn ");
                     }
                     return OrderDetailDTO.builder()
                             .id(detail.getId())
@@ -264,6 +274,8 @@ public class OrderService {
                             .price(detail.getPrice())
                             .totalMoney(detail.getTotalMoney())
                             .build();
+
+
                 })
                 .collect(Collectors.toList());
 
