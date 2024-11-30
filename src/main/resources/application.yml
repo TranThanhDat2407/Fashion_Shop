@@ -1,6 +1,18 @@
 server:
   port: 8080
+
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: datttps37451@fpt.edu.vn
+    password: gxwg orwu snox nwou
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=FASHION_SHOP;encrypt=false;trustServerCertificate=true;
     username: sa
@@ -25,17 +37,29 @@ spring:
   security:
     oauth2:
       client:
-        registration:
-          google:
-            client-id: YOUR_FACEBOOK_APP_ID
-            client-secret: YOUR_FACEBOOK_APP_SECRET
-            redirect-uri: "TEST"
-            user-info-uri:
-
-            resource-server:
-              oqaque-token:
-                introspection-uri: "https://googleapis.com"
+#        registration:
+#          google:
+#            client-id: YOUR_FACEBOOK_APP_ID
+#            client-secret: YOUR_FACEBOOK_APP_SECRET
+#            redirect-uri: "TEST"
+#            user-info-uri:
+#
+#            resource-server:
+#              oqaque-token:
+#                introspection-uri: "https://googleapis.com"
 
 
 api:
   prefix: /api/v1
+
+jwt:
+  expiration: 2592000 #30 days = 30 * 24 * 60 * 60
+  expiration-refresh-token: 5184000 #60 days = 60 * 24 * 60 * 60
+  secretKey: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
+
+  logging:
+    level:
+      root: DEBUG
+      org.springframework: DEBUG
+      org.testng: DEBUG
+

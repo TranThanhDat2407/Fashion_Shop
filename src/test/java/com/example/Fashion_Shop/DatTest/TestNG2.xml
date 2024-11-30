@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Spring Boot TestNG Suite">
+    <test name="Test User Controller">
+        <classes>
+            <class name="com.example.Fashion_Shop.DatTest.TestUserController" />
+        </classes>
+    </test>
+</suite>

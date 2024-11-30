@@ -1,6 +1,9 @@
 package com.example.Fashion_Shop.controller;
 
 import com.example.Fashion_Shop.dto.CartItemDTO;
+import com.example.Fashion_Shop.model.Product;
+import com.example.Fashion_Shop.model.ProductImage;
+import com.example.Fashion_Shop.model.SKU;
 import com.example.Fashion_Shop.response.cart.CartItemResponse;
 import com.example.Fashion_Shop.response.cart.CartResponse;
 import com.example.Fashion_Shop.response.cart.TotalItemResponse;
@@ -8,13 +11,17 @@ import com.example.Fashion_Shop.service.cart.CartService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("${api.prefix}/cart")
 @AllArgsConstructor
 public class CartController {
     private final CartService cartService;
+
 
     @GetMapping
     public ResponseEntity<CartResponse> getUserCart(
@@ -42,11 +49,12 @@ public class CartController {
             @RequestParam Long userId,
             @RequestBody CartItemDTO cartItemDTO
             ){
+
         return ResponseEntity.ok(cartService.addToCart(userId, cartItemDTO));
     }
 
     @GetMapping("/totalItem")
-    public ResponseEntity<TotalItemResponse> addToCart(
+    public ResponseEntity<TotalItemResponse> totalCartItem(
             @RequestParam Long userId
     ){
         TotalItemResponse total = TotalItemResponse.builder()
@@ -72,7 +80,7 @@ public class CartController {
     )
     {
         cartService.deleteCartItem(cartId);
-        return ResponseEntity.ok("Delete successfully cart item: "+ cartId );
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/removeAll")
@@ -82,6 +90,19 @@ public class CartController {
     {
         cartService.deleteAllCart(userId);
         return ResponseEntity.ok("Delete all cart item successfully user id: "+ userId );
+    }
+
+    @PostMapping("/guest")
+    public ResponseEntity<List<CartItemResponse>> getGuestCart(
+            @RequestBody List<CartItemDTO> cartItems) {
+
+        List<CartItemResponse> cartItemResponses = cartService.getGuestCartItems(cartItems);
+
+        if (cartItemResponses.isEmpty()) {
+            return ResponseEntity.ok().body(List.of());
+        }
+
+        return ResponseEntity.ok(cartItemResponses);
     }
 
 }

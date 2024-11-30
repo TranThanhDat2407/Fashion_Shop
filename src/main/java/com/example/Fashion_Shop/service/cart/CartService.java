@@ -2,6 +2,7 @@ package com.example.Fashion_Shop.service.cart;
 
 import com.example.Fashion_Shop.dto.CartItemDTO;
 import com.example.Fashion_Shop.model.Cart;
+import com.example.Fashion_Shop.model.Product;
 import com.example.Fashion_Shop.model.SKU;
 import com.example.Fashion_Shop.model.User;
 import com.example.Fashion_Shop.repository.CartRepository;
@@ -18,12 +19,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class CartService {
     private final CartRepository cartRepository;
     private final SkuRepository skuRepository;
     private final UserRepository userRepository;
+
 
     public Page<CartItemResponse> getUserCart(Long userId, int page, int size, String sortBy, String sortDirection) {
         // Xác định hướng sắp xếp
@@ -103,5 +107,17 @@ public class CartService {
     }
 
 
+    public List<CartItemResponse> getGuestCartItems(List<CartItemDTO> cartItems) {
+        return cartItems.stream()
+                .map(item -> {
+                    SKU sku = skuRepository.findById(item.getSkuId())
+                            .orElseThrow(() -> new RuntimeException("SKU not found"));
+                    Product product = sku.getProduct();
+
+                    // Sử dụng fromGuestCart để tạo CartItemResponse
+                    return CartItemResponse.fromGuestCart(sku, product, item.getQuantity());
+                })
+                .toList();
+    }
 
 }

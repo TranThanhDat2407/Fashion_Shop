@@ -25,6 +25,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Query("SELECT SUM(c.quantity) FROM Cart c WHERE c.user.id = :userId")
     Integer sumQuantityByUserId(@Param("userId") Long userId);
 
+    @Modifying
     @Query("DELETE FROM Cart c WHERE c.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);
 }

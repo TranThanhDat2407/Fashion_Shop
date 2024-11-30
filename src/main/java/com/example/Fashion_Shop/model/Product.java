@@ -36,7 +36,7 @@ public class Product extends BaseEntity {
     @JsonManagedReference
     private List<SKU> sku;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
 //    @JsonBackReference
     @JsonManagedReference
     private List<ProductImage> productImages;
