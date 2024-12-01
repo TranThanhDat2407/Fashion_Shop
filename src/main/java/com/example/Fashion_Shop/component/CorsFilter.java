@@ -28,7 +28,7 @@ public class CorsFilter extends OncePerRequestFilter {
         //Cho phép các yêu cầu từ mọi nguồn (domain).
         response.setHeader("Access-Control-Allow-Origin", "*");
         //Xác định các phương thức HTTP được phép khi truy cập tài nguyên.
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         //request có thể được lưu trong 1 giờ (3600 giây).
         response.setHeader("Access-Control-Max-Age", "3600");
         //Xác định các header mà client được phép gửi kèm trong yêu cầu.

@@ -5,7 +5,9 @@ import com.example.Fashion_Shop.dto.OrderDetailDTO;
 import com.example.Fashion_Shop.model.*;
 import com.example.Fashion_Shop.repository.*;
 import com.example.Fashion_Shop.service.cart.CartService;
+import com.example.Fashion_Shop.service.email.MailerService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -21,11 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
 
-
-    OrderPaymentRepository orderPaymentRepository;
-
-    private final JavaMailSender mailSender;
-
+    private final MailerService mailerService;
 
     private final SkuRepository skuRepository;
 
@@ -155,6 +153,9 @@ public class OrderService {
         for (OrderDetail detail : savedOrder.getOrderDetails()) {
             System.out.println("OrderDetail đã lưu với ID: " + detail.getId()); // In ID sau khi lưu
         }
+
+        sendOrderConfirmationEmail(savedOrder);
+
         cartService.deleteAllCart(userId);
 
         return savedOrder;
@@ -181,16 +182,8 @@ public class OrderService {
 
         body.append("<br>Cảm ơn bạn đã mua sắm tại cửa hàng của chúng tôi!");
 
-
-        try {
-            MimeMessageHelper helper = new MimeMessageHelper(mailSender.createMimeMessage(), true);
-            helper.setTo(recipientEmail);
-            helper.setSubject(subject);
-            helper.setText(body.toString(), true);
-            mailSender.send(helper.getMimeMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Gửi email
+        mailerService.sendEmail(recipientEmail, subject, body.toString());
     }
 
 
@@ -206,25 +199,25 @@ public class OrderService {
     }
 
 
-    public void updateOrderPayment(Long orderId, String transactionId, String paymentResponse, BigDecimal totalAmount) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        // Cập nhật trạng thái đơn hàng
-        order.setStatus("Paid");
-        orderRepository.save(order);
-
-        // Tạo bản ghi thanh toán mới
-        OrderPayment payment = new OrderPayment();
-        payment.setOrder(order);
-        payment.setTransactionId(transactionId);
-        payment.setTransactionDate(new Date());
-        payment.setPaymentGatewayResponse(paymentResponse);
-        payment.setAmount(totalAmount);
-        payment.setStatus("Success");
-
-        orderPaymentRepository.save(payment);
-    }
+//    public void updateOrderPayment(Long orderId, String transactionId, String paymentResponse, BigDecimal totalAmount) {
+//        Order order = orderRepository.findById(orderId)
+//                .orElseThrow(() -> new RuntimeException("Order not found"));
+//
+//        // Cập nhật trạng thái đơn hàng
+//        order.setStatus("Paid");
+//        orderRepository.save(order);
+//
+//        // Tạo bản ghi thanh toán mới
+//        OrderPayment payment = new OrderPayment();
+//        payment.setOrder(order);
+//        payment.setTransactionId(transactionId);
+//        payment.setTransactionDate(new Date());
+//        payment.setPaymentGatewayResponse(paymentResponse);
+//        payment.setAmount(totalAmount);
+//        payment.setStatus("Success");
+//
+//        orderPaymentRepository.save(payment);
+//    }
 
 
 //    public OrderDTO convertToDTO(Order order) {
@@ -263,13 +256,14 @@ public class OrderService {
                 .map(detail -> {
                     System.out.println("OrderDetail ID: " + detail.getId());
                     SKU sku = detail.getSku();
+                    System.out.println("SKU: " + sku);
                     Long skuId = (sku != null) ? sku.getId() : null;
                     if (skuId != null && skuId > Integer.MAX_VALUE) {
                         throw new IllegalArgumentException("SKU ID vượt quá giới hạn ");
                     }
                     return OrderDetailDTO.builder()
                             .id(detail.getId())
-                            .skuId(skuId != null ? Math.toIntExact(skuId) : null)
+                            .skuId(detail.getSku().getId())
                             .quantity(detail.getQuantity())
                             .price(detail.getPrice())
                             .totalMoney(detail.getTotalMoney())

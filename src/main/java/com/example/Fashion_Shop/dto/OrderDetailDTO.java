@@ -1,4 +1,5 @@
 package com.example.Fashion_Shop.dto;
+import com.example.Fashion_Shop.model.SKU;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 @Getter
@@ -10,7 +11,7 @@ public class OrderDetailDTO {
     @JsonProperty("id")
     private Long id;
     @JsonProperty("skuId")
-    private Integer skuId;
+    private Long skuId;
     @JsonProperty("quantity")
     private Integer quantity;
     @JsonProperty("price")
@@ -18,6 +19,5 @@ public class OrderDetailDTO {
     @JsonProperty("totalMoney")
     private Double totalMoney;
 
-    public void setSkuId(Long id) {
-    }
+
 }

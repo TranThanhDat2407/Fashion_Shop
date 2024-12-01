@@ -21,11 +21,13 @@ import java.util.Optional;
 public class AddressController {
     @Autowired
     private AddressService addressService;
-
+//    @Autowired
+//    private AuthenticationService authenticationService;
 
     @PostMapping
     public ResponseEntity<Address> createOrUpdateAddress(@Valid @RequestBody Address address) {
-
+//        User currentUser = authenticationService.getCurrentUser();
+//        address.setUser(currentUser);
         if (address.getUser() == null) {
             Address errorResponse = new Address();
             errorResponse.setCity("User must be provided.");
@@ -59,17 +61,36 @@ public class AddressController {
         }
     }
 
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Address> updateAddress(@PathVariable Integer id, @RequestBody Address address) {
+//        Optional<Address> existingAddress = addressService.getAddressById(id);
+//        if (existingAddress.isPresent()) {
+//            address.setId(id);
+//            Address updatedAddress = addressService.saveAddress(address);
+//            return ResponseEntity.ok(updatedAddress);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+//        }
+//    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Address> updateAddress(@PathVariable Integer id, @RequestBody Address address) {
+        if (address == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
         Optional<Address> existingAddress = addressService.getAddressById(id);
         if (existingAddress.isPresent()) {
+            Address existing = existingAddress.get();
             address.setId(id);
+            address.setUser(existing.getUser()); //user cũ
             Address updatedAddress = addressService.saveAddress(address);
             return ResponseEntity.ok(updatedAddress);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
 
 
     @DeleteMapping("/{id}")
@@ -91,14 +112,20 @@ public class AddressController {
         return new ResponseEntity<>(addresses, HttpStatus.OK);
     }
 
+
+
+
     @PatchMapping("/set-default/{addressId}")
     public ResponseEntity<String> setDefaultAddress(@PathVariable @Min(1) Integer addressId) {
         boolean isSetDefault = addressService.setDefaultAddress(addressId);
+
         if (isSetDefault) {
-            return ResponseEntity.ok("Address set as default successfully."); // Trả về thông báo thành công
+//            return ResponseEntity.ok("Address set as default successfully.");
+            return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Address not found.");
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body("Address not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 

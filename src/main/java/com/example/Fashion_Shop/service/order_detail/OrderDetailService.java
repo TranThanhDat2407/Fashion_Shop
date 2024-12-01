@@ -58,25 +58,27 @@ public class OrderDetailService {
 //        }
 //        return orderDetails;
 //    }
-    @Transactional
-    public List<OrderDetailDTO> getOrderDetailsByOrderId(Integer orderId) {
+@Transactional
+public List<OrderDetailDTO> getOrderDetailsByOrderId(Integer orderId) {
+    List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithSku(orderId);
+    return orderDetails.stream().map(orderDetail -> {
+        OrderDetailDTO dto = new OrderDetailDTO();
+        dto.setId(orderDetail.getId());
+        dto.setQuantity(orderDetail.getQuantity());
+        dto.setPrice(orderDetail.getPrice());
+        dto.setTotalMoney(orderDetail.getTotalMoney());
 
-        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderId);
-        orderDetails.forEach(orderDetail -> {
 
-            Hibernate.initialize(orderDetail.getSku());
-        });
-        return orderDetails.stream().map(orderDetail -> {
-            OrderDetailDTO dto = new OrderDetailDTO();
-            dto.setId(orderDetail.getId());
-            dto.setQuantity(orderDetail.getQuantity());
-            dto.setPrice(orderDetail.getPrice());
-            dto.setTotalMoney(orderDetail.getTotalMoney());
-//            dto.setSkuId((orderDetail.getSku().getId()));
-            dto.setSkuId(orderDetail.getSku() != null ? orderDetail.getSku().getId() : null);
-            return dto;
-        }).collect(Collectors.toList());
-    }
+        if (orderDetail.getSku() != null) {
+            dto.setSkuId(orderDetail.getSku().getId());
+        } else {
+            dto.setSkuId(null);
+        }
+
+        return dto;
+    }).collect(Collectors.toList());
+}
+
 
 
 

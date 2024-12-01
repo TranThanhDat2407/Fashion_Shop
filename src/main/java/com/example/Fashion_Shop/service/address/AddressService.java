@@ -100,29 +100,25 @@ public Address saveAddress(Address address) {
 //    }
 
 
-@Transactional
+    @Transactional
     public boolean setDefaultAddress(Integer addressId) {
         Optional<Address> addressOptional = addressRepository.findById(addressId);
         if (addressOptional.isPresent()) {
-            Address address = addressOptional.get();
+            Address addressToSetDefault = addressOptional.get();
+            List<Address> userAddresses = addressRepository.findAllByUser_Id(addressToSetDefault.getUser().getId());
 
-            // Đặt tất cả các địa chỉ của user thành không mặc định
-            List<Address> userAddresses = addressRepository.findAllByUser_Id(address.getUser().getId());
+            // Đặt tất cả các địa chỉ thành không mặc định, trừ địa chỉ được chọn
             for (Address addr : userAddresses) {
-                if (addr.getIsDefault()) {
-                    addr.setIsDefault(false);
-                }
+                addr.setIsDefault(addr.getId().equals(addressId));
             }
 
-            // Đặt địa chỉ được chọn làm mặc định
-            address.setIsDefault(true);
-            addressRepository.saveAll(userAddresses); // Cập nhật tất cả địa chỉ
-            addressRepository.save(address); // Cập nhật địa chỉ được chọn
-
-            return true; // Địa chỉ đã được cập nhật thành công
+            // Lưu tất cả địa chỉ đã cập nhật
+            addressRepository.saveAll(userAddresses);
+            return true;
         }
         return false; // Không tìm thấy địa chỉ
     }
+
 
 
 

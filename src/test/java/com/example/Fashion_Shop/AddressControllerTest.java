@@ -1,216 +1,137 @@
 package com.example.Fashion_Shop;
 
-import com.example.Fashion_Shop.controller.AddressController;
 import com.example.Fashion_Shop.model.Address;
 import com.example.Fashion_Shop.model.User;
-import com.example.Fashion_Shop.service.address.AddressService;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import com.example.Fashion_Shop.repository.AddressRepository;
+import com.example.Fashion_Shop.repository.UserRepository;
+import com.example.Fashion_Shop.service.user.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
 public class AddressControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private AddressService addressService;
-
-    @InjectMocks
-    private AddressController addressController;
-
-    private HSSFWorkbook workbook;
-    private HSSFSheet sheet;
-    private int rowCount;
+    @Autowired
+    private AddressRepository addressRepository;
 
 
-    @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(addressController).build();
-        workbook = new HSSFWorkbook();
-        sheet = workbook.createSheet("Test Address Results");
-        rowCount = 1;
 
-        Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("Test ID");
-        headerRow.createCell(1).setCellValue("Test Name");
-        headerRow.createCell(2).setCellValue("Result");
-        headerRow.createCell(3).setCellValue("Message");
-    }
+    @Autowired
+    private UserRepository userRepository;
 
-    @AfterEach
-    public void exportTestResultsToExcel() {
-        try (FileOutputStream out = new FileOutputStream(new File("test_results.xls"))) {
-            workbook.write(out);
-            System.out.println("Test results have been successfully saved to Excel file: test_results.xls");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    @BeforeMethod
+    public void setUp() {
 
-    private void logResult(String testName, String result, String message) {
-        Row row = sheet.createRow(rowCount++);
-        row.createCell(0).setCellValue(rowCount - 1);
-        row.createCell(1).setCellValue(testName);
-        row.createCell(2).setCellValue(result);
-        row.createCell(3).setCellValue(message);
+        User user = new User();
+        user.setId(4L);
+
+        userRepository.save(user);
     }
 
     @Test
-    public void testCreateOrUpdateAddress() throws Exception {
-        try {
-            Address address = new Address();
-            address.setId(1);
-            address.setCity("Ho Chi Minh");
-            address.setWard("Ward 1");
-            address.setStreet("123 Hoàng Hoa Thám");
-            address.setIsDefault(true);
-            User user = new User();
-            user.setId(1L);
-            address.setUser(user);
+    public void testCreateAddressIntegration() throws Exception {
+        // Tạo đối tượng Address
+        ObjectMapper objectMapper = new ObjectMapper();
+        Address address = new Address();
+        address.setCity("TP Hồ Chí Minh");
+        address.setWard("Phú Nhuận");
+        address.setStreet("456 Nguyễn Đình Chiểu");
+        address.setIsDefault(false);
 
-            when(addressService.saveAddress(any(Address.class))).thenReturn(address);
+        User user = new User();
+        user.setId(4L);
+        address.setUser(user);
 
-            mockMvc.perform(post("/api/v1/addresses")
-                            .contentType("application/json")
-                            .content("{\"city\":\"Ho Chi Minh\", \"ward\":\"Ward 1\", " +
-                                    "\"street\":\"123 Hoàng Hoa Thám\"," +
-                                    " \"isDefault\":true, \"user\":{\"id\":1}}"))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").value(1))
-                    .andExpect(jsonPath("$.street").value("123 Hoàng Hoa Thám"))
-                    .andExpect(jsonPath("$.city").value("Ho Chi Minh"))
-                    .andExpect(jsonPath("$.ward").value("Ward 1"))
-                    .andExpect(jsonPath("$.isDefault").value(true))
-                    .andExpect(jsonPath("$.user.id").value(1L));
+        // Chuyển Address thành JSON
+        String addressJson = objectMapper.writeValueAsString(address);
 
-            logResult("testCreateOrUpdateAddress", "Pass", "Create or Update Address");
-        } catch (Exception e) {
-            logResult("testCreateOrUpdateAddress", "Fail", e.getMessage());
-        }
+        // Gửi yêu cầu POST và kiểm tra phản hồi
+        mockMvc.perform(post("/api/v1/addresses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(addressJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.city").value("TP Hồ Chí Minh"))
+                .andExpect(jsonPath("$.ward").value("Phú Nhuận"))
+                .andExpect(jsonPath("$.street").value("456 Nguyễn Đình Chiểu"))
+                .andExpect(jsonPath("$.isDefault").value(false));
+
+        // Kiểm tra dữ liệu đã được lưu trong database
+        List<Address> addresses = addressRepository.findAll();
+        assert !addresses.isEmpty();
+
+        Address savedAddress = addresses.get(0);
+        assert savedAddress.getCity().equals("TP Hồ Chí Minh");
+        assert savedAddress.getWard().equals("Phú Nhuận");
+        assert savedAddress.getStreet().equals("456 Nguyễn Đình Chiểu");
+        assert !savedAddress.getIsDefault();
+        assert savedAddress.getUser().getId() == 4;
     }
 
-    @Test
-    public void testCreateOrUpdateAddressWithMissingFields() throws Exception {
-        try {
-            Address address = new Address();
-            address.setStreet("123 Hoàng Hoa Thám");
 
-            when(addressService.saveAddress(any(Address.class))).thenReturn(address);
 
-            mockMvc.perform(post("/api/v1/addresses")
-                            .contentType("application/json")
-                            .content("{\"street\":\"123 Hoàng Hoa Thám\"}"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.message").value("City and Ward are required"));
-
-            logResult("testCreateOrUpdateAddressWithMissingFields", "Pass", "City and Ward are required");
-        } catch (Exception e) {
-            logResult("testCreateOrUpdateAddressWithMissingFields", "Fail", e.getMessage());
-        }
-    }
 
     @Test
+    @DisplayName("Test get all addresses")
     public void testGetAllAddresses() throws Exception {
-        try {
-            Address address = new Address();
-            address.setId(1);
-            address.setStreet("123 Hoàng Hoa Thám");
+        // Tình huống 1: Không có địa chỉ nào
+        mockMvc.perform(get("/api/v1/addresses"))
+                .andExpect(status().isNoContent())  // Kiểm tra mã trạng thái 204
+                .andExpect(jsonPath("$").isEmpty());  // Kiểm tra rằng mảng trả về là rỗng
 
-            when(addressService.getAllAddresses()).thenReturn(Arrays.asList(address));
+        User user = userRepository.findById(4L).orElseThrow(() -> new RuntimeException("User not found"));
+        // Tình huống 2: Có địa chỉ trong cơ sở dữ liệu
+        Address address1 = new Address(6,"Hanoi","Dong Da","123 Pho Hue", false, user );
+        Address address2 = new Address(7,"Hồ Chí Minh","Ward 1","123 Hoàng Hoa Thám", false,user);
+        addressRepository.save(address1);
+        addressRepository.save(address2);
 
-            mockMvc.perform(get("/api/v1/addresses"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].street").value("123 Hoàng Hoa Thám"));
-
-            logResult("testGetAllAddresses", "Pass", "Get All Address");
-        } catch (Exception e) {
-            logResult("testGetAllAddresses", "Fail", e.getMessage());
-        }
+        mockMvc.perform(get("/api/v1/addresses"))
+                .andExpect(status().isOk())  // Kiểm tra mã trạng thái 200
+                .andExpect(jsonPath("$").isArray())  // Kiểm tra rằng kết quả là một mảng
+                .andExpect(jsonPath("$.length()").value(2))  // Kiểm tra số lượng địa chỉ
+                .andExpect(jsonPath("$[0].city").value("Hanoi"))  // Kiểm tra thông tin địa chỉ đầu tiên
+                .andExpect(jsonPath("$[1].city").value("Hồ Chí Minh"));  // Kiểm tra thông tin địa chỉ thứ hai
     }
 
+
     @Test
+    @DisplayName("Test get address by ID")
     public void testGetAddressById() throws Exception {
-        try {
-            Address address = new Address();
-            address.setId(100);
-//            address.setStreet("123 Hoàng Hoa Thám");
+        // Tình huống 1: Địa chỉ tồn tại
+        User user = userRepository.findById(4L).orElseThrow(() -> new RuntimeException("User not found"));
+        Address address = new Address(6,"Hanoi","Dong Da","123 Pho Hue", false, user);
+        Address savedAddress = addressRepository.save(address);
 
-            when(addressService.getAddressById(100)).thenReturn( Optional.of(address));
-            mockMvc.perform(get("/api/v1/addresses/100"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(100));
-//                    .andExpect(jsonPath("$.street").value("123 Hoàng Hoa Thám"));
+        mockMvc.perform(get("/api/v1/addresses/{id}", savedAddress.getId()))
+                .andExpect(status().isOk())  // Kiểm tra mã trạng thái 200
+                .andExpect(jsonPath("$.city").value("TP Hồ Chí Minh"))  // Kiểm tra thông tin địa chỉ
+                .andExpect(jsonPath("$.ward").value("Phú Nhuận"))
+                .andExpect(jsonPath("$.street").value("456 Nguyễn Đình Chiểu"))
+                .andExpect(jsonPath("$.isDefault").value(false));
 
-            logResult("testGetAddressById", "Pass", "Get Address By Id");
-        } catch (Exception e) {
-            logResult("testGetAddressById", "Fail", e.getMessage());
-        }
+        // Tình huống 2: Địa chỉ không tồn tại
+        mockMvc.perform(get("/api/v1/addresses/{id}", 999))  // Sử dụng một ID không tồn tại
+                .andExpect(status().isNotFound());  // Kiểm tra mã trạng thái 404
     }
 
-    @Test
-    public void testGetAddressById_NotFound() throws Exception {
-        try {
-            when(addressService.getAddressById(1)).thenReturn(Optional.empty());
 
-            mockMvc.perform(get("/api/v1/addresses/1"))
-                    .andExpect(status().isNotFound());
 
-            logResult("testGetAddressById_NotFound", "Pass", "Address not found");
-        } catch (Exception e) {
-            logResult("testGetAddressById_NotFound", "Fail", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testDeleteAddress() throws Exception {
-        try {
-            doNothing().when(addressService).deleteAddress(1);
-
-            mockMvc.perform(delete("/api/v1/addresses/1"))
-                    .andExpect(status().isNoContent());
-
-            logResult("testDeleteAddress", "Pass", "Address deleted successfully");
-        } catch (Exception e) {
-            logResult("testDeleteAddress", "Fail", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testSetDefaultAddress() throws Exception {
-        try {
-            doNothing().when(addressService).setDefaultAddress(1);
-
-            mockMvc.perform(patch("/api/v1/addresses/set-default/1"))
-                    .andExpect(status().isNoContent());
-
-            logResult("testSetDefaultAddress", "Pass", "Set Default Address");
-        } catch (Exception e) {
-            logResult("testSetDefaultAddress", "Fail", e.getMessage());
-        }
-    }
 }

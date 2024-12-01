@@ -1,0 +1,7 @@
+<suite name="Spring Boot TestNG Suite">
+    <test name="Address Controller Test">
+        <classes>
+            <class name="com.example.Fashion_Shop.AddressControllerTest"/>
+        </classes>
+    </test>
+</suite>
