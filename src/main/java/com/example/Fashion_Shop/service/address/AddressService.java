@@ -7,6 +7,7 @@ import com.example.Fashion_Shop.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -80,22 +81,48 @@ public Address saveAddress(Address address) {
     }
 
 
-    public List<Address> getAddressesByUserId(Integer userId) {
+    public List<Address> getAddressesByUserId(Long userId) {
         return addressRepository.findAllByUser_Id(userId);
     }
 
 
+//
+//    public boolean setDefaultAddress(Integer addressId) {
+//        Optional<Address> addressOptional = addressRepository.findById(addressId);
+//        if (addressOptional.isPresent()) {
+//            Address address = addressOptional.get();
+//
+//            address.setIsDefault(true);
+//            addressRepository.save(address);
+//            return true; // Địa chỉ đã được cập nhật thành công
+//        }
+//        return false; // Không tìm thấy địa chỉ
+//    }
 
+
+    @Transactional
     public boolean setDefaultAddress(Integer addressId) {
         Optional<Address> addressOptional = addressRepository.findById(addressId);
         if (addressOptional.isPresent()) {
-            Address address = addressOptional.get();
-            // Cập nhật địa chỉ này thành mặc định
-            address.setIsDefault(true);
-            addressRepository.save(address);
-            return true; // Địa chỉ đã được cập nhật thành công
+            Address addressToSetDefault = addressOptional.get();
+            List<Address> userAddresses = addressRepository.findAllByUser_Id(addressToSetDefault.getUser().getId());
+
+            // Đặt tất cả các địa chỉ thành không mặc định, trừ địa chỉ được chọn
+            for (Address addr : userAddresses) {
+                addr.setIsDefault(addr.getId().equals(addressId));
+            }
+
+            // Lưu tất cả địa chỉ đã cập nhật
+            addressRepository.saveAll(userAddresses);
+            return true;
         }
         return false; // Không tìm thấy địa chỉ
     }
+
+
+
+
+
+
 
 }

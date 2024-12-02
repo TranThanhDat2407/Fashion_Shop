@@ -34,6 +34,7 @@ spring:
             resource-server:
               oqaque-token:
                 introspection-uri: "https://googleapis.com"
+
   ai:
     openai:
       api-key: YOUR_API_KEY
@@ -49,17 +50,7 @@ api:
   prefix: /api/v1
 
 
-#  mail:
-#    host: smtp.gmail.com
-#    port: 587
-#    username: taibvps37458@fpt.edu.vn
-#    password: gkua nsmk ijqe yjjd
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls:
-#            enable: true
+
 
 
 

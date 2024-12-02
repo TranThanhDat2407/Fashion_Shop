@@ -44,7 +44,7 @@ public class OrderDTO {
     private String shippingMethod;
 
 
-
+    @JsonProperty("orderDetails")
     private List<OrderDetailDTO> orderDetails;
 
 }

@@ -5,6 +5,7 @@ import com.example.Fashion_Shop.dto.OrderDetailDTO;
 import com.example.Fashion_Shop.model.Order;
 import com.example.Fashion_Shop.model.OrderDetail;
 import com.example.Fashion_Shop.repository.OrderDetailRepository;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,19 +58,27 @@ public class OrderDetailService {
 //        }
 //        return orderDetails;
 //    }
+@Transactional
+public List<OrderDetailDTO> getOrderDetailsByOrderId(Integer orderId) {
+    List<OrderDetail> orderDetails = orderDetailRepository.findByOrderIdWithSku(orderId);
+    return orderDetails.stream().map(orderDetail -> {
+        OrderDetailDTO dto = new OrderDetailDTO();
+        dto.setId(orderDetail.getId());
+        dto.setQuantity(orderDetail.getQuantity());
+        dto.setPrice(orderDetail.getPrice());
+        dto.setTotalMoney(orderDetail.getTotalMoney());
 
-    public List<OrderDetailDTO> getOrderDetailsByOrderId(Integer orderId) {
-        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderId);
-        return orderDetails.stream().map(orderDetail -> {
-            OrderDetailDTO dto = new OrderDetailDTO();
-            dto.setId(orderDetail.getId());
-            dto.setQuantity(orderDetail.getQuantity());
-            dto.setPrice(orderDetail.getPrice());
-            dto.setTotalMoney(orderDetail.getTotalMoney());
-            dto.setSkuId((orderDetail.getSku().getId()));
-            return dto;
-        }).collect(Collectors.toList());
-    }
+
+        if (orderDetail.getSku() != null) {
+            dto.setSkuId(orderDetail.getSku().getId());
+        } else {
+            dto.setSkuId(null);
+        }
+
+        return dto;
+    }).collect(Collectors.toList());
+}
+
 
 
 
