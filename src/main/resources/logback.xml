@@ -1,0 +1,74 @@
+<configuration>
+    <!-- Define Log File Paths -->
+    <property name="LOG_ERROR_FILE" value="src/main/resources/logs/error.log" />
+    <property name="LOG_WARN_FILE" value="src/main/resources/logs/warning.log" />
+    <property name="LOG_TRACE_FILE" value="src/main/resources/logs/trace.log" />
+    <property name="LOG_ALL_FILE" value="src/main/resources/logs/application.log" />
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender for All Logs -->
+    <appender name="ALL_LOGS" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_ALL_FILE}</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender for Error Logs -->
+    <appender name="ERROR_LOGS" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_ERROR_FILE}</file>
+        <append>true</append>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender for Warning Logs -->
+    <appender name="WARN_LOGS" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_WARN_FILE}</file>
+        <append>true</append>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender for Trace Logs -->
+    <appender name="TRACE_LOGS" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_TRACE_FILE}</file>
+        <append>true</append>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>TRACE</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger -->
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ALL_LOGS" />
+        <appender-ref ref="ERROR_LOGS" />
+        <appender-ref ref="WARN_LOGS" />
+        <appender-ref ref="TRACE_LOGS" />
+    </root>
+</configuration>

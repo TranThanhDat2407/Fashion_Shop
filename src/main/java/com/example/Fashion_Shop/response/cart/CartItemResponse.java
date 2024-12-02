@@ -1,7 +1,9 @@
 package com.example.Fashion_Shop.response.cart;
 
 import com.example.Fashion_Shop.model.Cart;
+import com.example.Fashion_Shop.model.Product;
 import com.example.Fashion_Shop.model.ProductImage;
+import com.example.Fashion_Shop.model.SKU;
 import com.example.Fashion_Shop.response.BaseResponse;
 import com.example.Fashion_Shop.response.SKU.SkuResponse;
 import com.example.Fashion_Shop.response.product_images.ProductImageResponse;
@@ -29,17 +31,39 @@ public class CartItemResponse extends BaseResponse {
                 .price(cart.getSku().getSalePrice()) // Giá bán từ SKU
                 .quantity(cart.getQuantity()) // Số lượng sản phẩm trong giỏ hàng
                 .productImage(cart.getSku().getProduct().getProductImages().stream()
-                        // lấy ảnh từ sku có product id và color id giống
-                        .filter(image -> image.getColor().getId().equals(cart.getSku().getProduct().getId()) &&
-                                        image.getColor().getId().equals(cart.getSku().getColor().getId()))
+                        .filter(image -> image.getProduct().getId().equals(cart.getSku().getProduct().getId()) &&
+                                image.getColor().getId().equals(cart.getSku().getColor().getId()))
                         .findFirst()
                         .map(ProductImage::getImageUrl)
-                        .orElse(null)) // Lấy ảnh đầu tiên của sản phẩm nếu có
-                .skuResponse(SkuResponse.fromSKU(cart.getSku()))// Chuyển đổi SKU thành SkuResponse
+                        .orElse(null)) // Ensure null is returned if no match
+                .skuResponse(SkuResponse.fromSKU(cart.getSku())) // Chuyển đổi SKU thành SkuResponse
                 .build();
+
         cartItemResponse.setCreateAt(cart.getCreateAt());
         cartItemResponse.setUpdateAt(cart.getUpdateAt());
+
         return cartItemResponse;
     }
+
+    public static CartItemResponse fromGuestCart(SKU sku, Product product, int quantity) {
+        // Lấy hình ảnh sản phẩm dựa trên SKU (dựa vào productId và colorId)
+        String productImageUrl = product.getProductImages().stream()
+                .filter(image -> image.getProduct().getId().equals(product.getId()) &&
+                        image.getColor().getId().equals(sku.getColor().getId()))
+                .findFirst()
+                .map(ProductImage::getImageUrl)
+                .orElse(null); // Trả về null nếu không tìm thấy
+
+        return CartItemResponse.builder()
+                .id(null) // Guest cart không có ID
+                .productId(product.getId())
+                .productName(product.getName())
+                .price(sku.getSalePrice())
+                .quantity(quantity)
+                .productImage(productImageUrl) // Thêm hình ảnh
+                .skuResponse(SkuResponse.fromSKU(sku))
+                .build();
+    }
+
 
 }

@@ -25,5 +25,4 @@ public class AttributeValue {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name= "attribute_id")
     private Attribute attribute;
-
 }

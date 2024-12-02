@@ -1,7 +1,11 @@
 select * from users;
 select * from skus;
 select * from roles;
+DELETE FROM users
+where email = 'datttps37451@gmail.com'
 
+DELETE FROM users
+where id = 29
 ALTER TABLE carts
 ADD create_at DATETIME DEFAULT GETDATE() NOT NULL,
     update_at DATETIME DEFAULT GETDATE() NOT NULL;

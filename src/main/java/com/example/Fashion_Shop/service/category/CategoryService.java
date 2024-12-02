@@ -8,6 +8,7 @@ import com.example.Fashion_Shop.repository.CategoryRepository;
 import com.example.Fashion_Shop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +33,10 @@ public class CategoryService {
         if (categoryDTO.getParentId() != null) {
             parentCategory = categoryRepository
                     .findById(categoryDTO.getParentId())
-                    .orElseThrow(() -> new DataNotFoundException
-                            ("Category not found with Id: " + categoryDTO.getParentId())
-                    );
+                    .orElseThrow(() -> {
+                        String errorMessage = "Category not found with Id: " + categoryDTO.getParentId();
+                        return new DataNotFoundException(errorMessage);
+                    });
         }
 
         Category newCategory = Category

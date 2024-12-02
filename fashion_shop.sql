@@ -116,6 +116,10 @@ CREATE TABLE carts
     FOREIGN KEY (sku_id) REFERENCES SKUs (id)
 )
 
+ALTER TABLE carts
+ADD create_at DATETIME DEFAULT GETDATE() NOT NULL,
+    update_at DATETIME DEFAULT GETDATE() NOT NULL;
+
 CREATE TABLE wishlist
 (
     id      INT IDENTITY (1,1),
@@ -192,4 +196,39 @@ CREATE TABLE order_payments
     FOREIGN KEY (order_id) REFERENCES orders (id)
 );
 
-SELECT * FROM products
+CREATE TABLE tokens (
+    id int IDENTITY(1,1) PRIMARY KEY,
+    token NVARCHAR(255) NOT NULL,
+    refresh_token NVARCHAR(255) NOT NULL,
+    token_type NVARCHAR(50) NOT NULL,
+    expiration_date DATETIME NOT NULL,
+    refresh_expiration_date DATETIME NOT NULL,
+    is_mobile BIT NOT NULL,
+    revoked BIT NOT NULL,
+    expired BIT NOT NULL,
+    user_id int FOREIGN KEY REFERENCES users(id)
+);
+
+
+ALTER TABLE users
+ADD facebook_account_id varchar(255),
+    google_account_id varchar(255);
+
+SELECT * FROM users
+SELECT * FROM tokens
+SELECT * FROM Roles
+drop table tokens
+
+SELECT * FROM product_images
+SELECT * FROM product_images WHERE product_id = 2 AND color_value_id = 9;
+SELECT color_value_id FROM skus WHERE id = 4;
+SELECT * FROM product_images WHERE product_id = 1;
+SELECT * FROM SKUs
+SELECT * FROM product_images
+WHERE product_id = 1 AND color_value_id != 4;
+
+SELECT c.id, c.sku_id,c.user_id, c.quantity
+FROM carts c
+WHERE c.user_id = 1;
+
+SELECT * FROM carts where user_id = 1
