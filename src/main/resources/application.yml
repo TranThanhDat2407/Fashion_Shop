@@ -34,7 +34,15 @@ spring:
             resource-server:
               oqaque-token:
                 introspection-uri: "https://googleapis.com"
-
+  ai:
+    openai:
+      api-key: YOUR_API_KEY
+      chat:
+        options:
+          model: gpt-4o-mini
+      embedding:
+        options:
+          model: text-embedding-3-large
 
 
 api:
