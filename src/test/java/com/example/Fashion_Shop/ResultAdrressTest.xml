@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="SaveTestNGResultToExcel" parallel="false">
+    <test name="SaveTestNGResultToExcel">
+        <classes>
+            <class name="com.example.Fashion_Shop.SeleniumTestAddress">
+                <methods>
+                    <include name="launchWebsite"></include>
+                    <include name="testAddNewAddress_Success"></include>
+                    <include name="testUpdateAddress_Success"></include>
+                    <include name="testAddNewAddress_Failure_MissingCity"></include>
+                    <include name="testDeleteAddress_Success"></include>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    <!-- SaveTestNGResultToExcel -->
+</suite>

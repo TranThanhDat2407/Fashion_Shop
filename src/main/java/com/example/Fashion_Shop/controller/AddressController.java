@@ -2,9 +2,7 @@ package com.example.Fashion_Shop.controller;
 
 
 import com.example.Fashion_Shop.model.Address;
-import com.example.Fashion_Shop.model.User;
 import com.example.Fashion_Shop.service.address.AddressService;
-import com.example.Fashion_Shop.service.user.UserService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -25,7 +23,7 @@ public class AddressController {
 //    private AuthenticationService authenticationService;
 
     @PostMapping
-    public ResponseEntity<Address> createOrUpdateAddress(@Valid @RequestBody Address address) {
+    public ResponseEntity<Address> createOrUpdateAddress(Long userId, @Valid @RequestBody Address address) {
 //        User currentUser = authenticationService.getCurrentUser();
 //        address.setUser(currentUser);
         if (address.getUser() == null) {
@@ -61,17 +59,7 @@ public class AddressController {
         }
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Address> updateAddress(@PathVariable Integer id, @RequestBody Address address) {
-//        Optional<Address> existingAddress = addressService.getAddressById(id);
-//        if (existingAddress.isPresent()) {
-//            address.setId(id);
-//            Address updatedAddress = addressService.saveAddress(address);
-//            return ResponseEntity.ok(updatedAddress);
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//        }
-//    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<Address> updateAddress(@PathVariable Integer id, @RequestBody Address address) {
