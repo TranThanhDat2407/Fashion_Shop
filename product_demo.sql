@@ -16,17 +16,17 @@ VALUES ('Color'),
 
 
 SELECT * FROM products
-INSERT INTO products (product_name, description)-- sản phẩm 5
+INSERT INTO products (name, description)-- sản phẩm 5
 VALUES (N'Áo Khoác Blouson Vải Brushed Jersey Kéo Khóa', N'-Mặt trong và mặt ngoài Áo Khoác Blouson Vải Brush Jersey đều được chải nhẹ, mang đến cảm giác mềm mại, thoải mái tuyệt đối. * Lớp lót bên trong được chải nhẹ, tạo nên độ mềm mại khác biệt so với bề mặt áo.
 - Dải thun mềm mại ở gấu áo và cổ tay ôm sát cơ thể, giúp giữ ấm và ngăn gió lùa, đồng thời cố định ống tay áo khi cần.');
 
-INSERT INTO products (product_name, description) --sản phẩm 6
+INSERT INTO products (name, description) --sản phẩm 6
 VALUES (N'Áo Thun Vải Dạ Mềm Cổ Ba Phân', N'- Soft and comfy brushed lining.
 - High collar design keeps the neck warm.
 - Ribbed cuffs make it easy to roll up the sleeves.
 - Versatile mock neck design with dropped shoulders and a relaxed fit, suitable for wearing alone or layered');
 
-INSERT INTO products (product_name, description) --sản phẩm 7
+INSERT INTO products (name, description) --sản phẩm 7
 VALUES (N'Quần Dài Xếp Ly Ống Rộng', N'- Cải tiến với đường may suông thẳng.
 - Thiết kế cạp thấp hơn để đáp lại phản hồi của khách hàng.
 - Sợi vải được chọn lọc đặc biệt để tạo nên kết cấu trang nhã.
@@ -59,7 +59,7 @@ VALUES ('06 GRAY','06GRAY.jpg',3),
        ('32 BEIGE','32BEIGE.jpg',3),--color sản phẩm 7
         ('70 NAVY','70NAVY.jpg',3)
 
-SELECT * FROM images
+SELECT * FROM product_images
 WHERE product_id = 6;
 
 INSERT INTO images(product_id, color_value_id, image_url) --ảnh sản phẩm 5

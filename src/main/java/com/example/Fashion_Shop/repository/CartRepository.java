@@ -18,6 +18,13 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
             "WHERE c.user.id = :userId")
     Page<Cart> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
+
+    @Query("SELECT c FROM Cart c " +
+            "WHERE c.user.id = :userId")
+    List<Cart> findByUserId(@Param("userId") Long userId);
+
+
+
     @Query("SELECT c FROM Cart c " +
             "WHERE c.user.id = :userId AND c.sku.id = :skuId")
     Optional<Cart> findByUserIdAndSKU(@Param("userId") Long userId, Long skuId);
