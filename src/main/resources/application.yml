@@ -35,17 +35,16 @@ spring:
               oqaque-token:
                 introspection-uri: "https://googleapis.com"
 
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: taibvps37458@fpt.edu.vn
-    password: azqe vfms wbff zfoy
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+  ai:
+    openai:
+      api-key: YOUR_API_KEY
+      chat:
+        options:
+          model: gpt-4o-mini
+      embedding:
+        options:
+          model: text-embedding-3-large
+
 
 api:
   prefix: /api/v1
